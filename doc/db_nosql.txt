@@ -1,0 +1,289 @@
+print("Đang tạo 6 collection + 53 document mẫu...")
+
+// ============== 2. USERS (6 người) ==============
+db.users.insertMany([
+  { phone: "0999999999", name: "ADMIN",      password: "admin123", role: "admin",    status: "active", revenue: 0, created_at: new Date() },
+  { phone: "0901000001", name: "Nam Khách",  password: "nam123",   role: "customer", status: "active", created_at: new Date() },
+  { phone: "0901000002", name: "Bé Khách",   password: "be123",    role: "customer", status: "active", created_at: new Date() },
+  { phone: "0901000003", name: "Anh Khách",  password: "anh123",   role: "customer", status: "active", created_at: new Date() },
+  { phone: "0888888888", name: "Shipper A",  password: "ship123",  role: "shipper",  status: "active", vehicle: "Wave", plate: "59H1-12345", is_online: false, delivery_stats: { total_orders: 0, completed_orders: 0, cancelled_orders: 0, avg_rating: 0 }, delivery_earnings: 0, created_at: new Date() },
+  { phone: "0777777777", name: "Chủ Nhà Hàng A", password: "owner123", role: "restaurant_owner", status: "active", revenue: 0, created_at: new Date() }
+])
+db.users.createIndex({ phone: 1 }, { unique: true })
+
+// Lưu ID của các user để sử dụng sau
+let admin   = db.users.findOne({ role: "admin" })._id
+let cust1   = db.users.findOne({ phone: "0901000001" })._id
+let cust2   = db.users.findOne({ phone: "0901000002" })._id
+let cust3   = db.users.findOne({ phone: "0901000003" })._id
+let shipper = db.users.findOne({ role: "shipper" })._id
+let owner1  = db.users.findOne({ role: "restaurant_owner" })._id  // Lưu ID của chủ nhà hàng
+
+print("users: 6 người (1 admin, 3 khách, 1 shipper, 1 chủ nhà hàng)")
+print("owner1 ID:", owner1, "  <- ID này sẽ được dùng để gán cho các nhà hàng")
+
+// ============== 3. RESTAURANTS (10 quán) ==============
+// MAPPING: Tất cả nhà hàng đều có owner_id = owner1
+// Điều này có nghĩa là tất cả 10 nhà hàng đều thuộc về "Chủ Nhà Hàng A" (phone: 0777777777)
+// Để biết chủ nhà hàng nào quản lý nhà hàng nào, chỉ cần xem field owner_id trong document restaurant
+let rest_ids = db.restaurants.insertMany([
+  { name: "Burger King Lê Lợi",   addr: "100 Lê Lợi Q1",   loc: { type: "Point", coordinates: [106.6995, 10.7769] }, open: "08:00", close: "22:00", rating: 4.5, status: "approved", owner_id: owner1, created_at: new Date() },
+  { name: "KFC Nguyễn Huệ",       addr: "50 Nguyễn Huệ Q1",loc: { type: "Point", coordinates: [106.7028, 10.7745] }, open: "09:00", close: "23:00", rating: 4.3, status: "approved", owner_id: owner1, created_at: new Date() },
+  { name: "Lotteria Bến Thành",   addr: "Chợ Bến Thành",   loc: { type: "Point", coordinates: [106.6980, 10.7720] }, open: "07:30", close: "21:30", rating: 4.1, status: "approved", owner_id: owner1, created_at: new Date() },
+  { name: "Phở 24 Pasteur",       addr: "63 Pasteur Q1",   loc: { type: "Point", coordinates: [106.6970, 10.7790] }, open: "06:00", close: "23:00", rating: 4.6, status: "approved", owner_id: owner1, created_at: new Date() },
+  { name: "Pizza 4P's",           addr: "8 Lê Thánh Tôn",  loc: { type: "Point", coordinates: [106.7010, 10.7770] }, open: "11:00", close: "22:00", rating: 4.8, status: "approved", owner_id: owner1, created_at: new Date() },
+  { name: "Highlands Coffee",     addr: "22 Nguyễn Huệ",   loc: { type: "Point", coordinates: [106.7030, 10.7750] }, open: "07:00", close: "22:00", rating: 4.2, status: "approved", owner_id: owner1, created_at: new Date() },
+  { name: "Bánh Mì Huỳnh Hoa",    addr: "26 Lê Thị Riêng", loc: { type: "Point", coordinates: [106.6950, 10.7800] }, open: "05:30", close: "22:00", rating: 4.9, status: "approved", owner_id: owner1, created_at: new Date() },
+  { name: "Cơm Tấm Ba Ghiền",     addr: "84 Đinh Tiên Hoàng", loc: { type: "Point", coordinates: [106.6960, 10.7810] }, open: "10:00", close: "21:00", rating: 4.4, status: "approved", owner_id: owner1, created_at: new Date() },
+  { name: "Sushi Rei",            addr: "10 Nguyễn Thiệp", loc: { type: "Point", coordinates: [106.7040, 10.7760] }, open: "11:30", close: "22:30", rating: 4.7, status: "pending", owner_id: owner1, created_at: new Date() },
+  { name: "Gà Rán Popeyes",       addr: "2 Phạm Ngọc Thạch", loc: { type: "Point", coordinates: [106.6900, 10.7830] }, open: "10:00", close: "22:00", rating: 4.0, status: "banned", owner_id: owner1, created_at: new Date() }
+]).insertedIds
+
+db.restaurants.createIndex({ loc: "2dsphere" })
+db.restaurants.createIndex({ owner_id: 1 })  // Index để tìm nhanh nhà hàng theo chủ
+print("restaurants: 10 quán + index 2dsphere + owner_id")
+print("")
+print("CÁCH KIỂM TRA MAPPING:")
+print("1. Xem tất cả nhà hàng của 1 chủ: db.restaurants.find({owner_id: owner1}).pretty()")
+print("2. Xem chủ của 1 nhà hàng: db.restaurants.findOne({name: 'Burger King Lê Lợi'}).owner_id")
+print("3. So sánh owner_id với users: db.users.findOne({_id: ObjectId('...')})")
+
+// ============== 4. MENUS (10 món) ==============
+db.menus.insertMany([
+  { rest_id: rest_ids[0], name: "Whopper Combo",     price: 99000, cat: "combo", status: "available", created_at: new Date() },
+  { rest_id: rest_ids[0], name: "Coke Lớn",         price: 15000, cat: "drink", status: "available", created_at: new Date() },
+  { rest_id: rest_ids[1], name: "Zinger Burger",    price: 65000, cat: "burger", status: "available", created_at: new Date() },
+  { rest_id: rest_ids[1], name: "Khoai Tây Chiên",  price: 35000, cat: "side", status: "available", created_at: new Date() },
+  { rest_id: rest_ids[2], name: "Cheese Burger",    price: 45000, cat: "burger", status: "available", created_at: new Date() },
+  { rest_id: rest_ids[3], name: "Phở Bò Tái",       price: 75000, cat: "phở", status: "available", created_at: new Date() },
+  { rest_id: rest_ids[4], name: "Pizza Margherita", price: 199000, cat: "pizza", status: "available", created_at: new Date() },
+  { rest_id: rest_ids[5], name: "Trà Sữa Trân Châu", price: 45000, cat: "drink", status: "available", created_at: new Date() },
+  { rest_id: rest_ids[6], name: "Bánh Mì Thịt Nướng", price: 35000, cat: "bánh mì", status: "available", created_at: new Date() },
+  { rest_id: rest_ids[7], name: "Cơm Tấm Sườn",      price: 55000, cat: "cơm", status: "available", created_at: new Date() }
+])
+print("menus: 10 món")
+
+// ============== 5. ORDERS (10 đơn) ==============
+// THIẾT KẾ: 1 Order = 1 Giỏ hàng (Cart)
+// Khi khách hàng checkout, toàn bộ giỏ hàng được chuyển thành 1 đơn hàng
+// Sau khi tạo order, giỏ hàng sẽ được xóa
+// LƯU Ý: total = subtotal + delivery_fee (15000)
+let now = new Date()
+// Lưu insertedIds để đảm bảo payments link đúng với orders (1-1 relationship)
+let order_inserted = db.orders.insertMany([
+  { user_id: cust1, rest_id: rest_ids[0], items: ["Whopper Combo","Coke Lớn"], total: 129000, delivery_fee: 15000, status: "delivered", shipper_id: shipper, created_at: new Date(now - 8*60*60*1000) },
+  { user_id: cust2, rest_id: rest_ids[1], items: ["Zinger Burger"], total: 80000, delivery_fee: 15000, status: "delivered", shipper_id: shipper, created_at: new Date(now - 7*60*60*1000) },
+  { user_id: cust3, rest_id: rest_ids[2], items: ["Cheese Burger"], total: 60000, delivery_fee: 15000, status: "delivered", shipper_id: shipper, created_at: new Date(now - 6*60*60*1000) },
+  { user_id: cust1, rest_id: rest_ids[3], items: ["Phở Bò Tái"], total: 90000, delivery_fee: 15000, status: "delivered", shipper_id: shipper, created_at: new Date(now - 5*60*60*1000) },
+  { user_id: cust2, rest_id: rest_ids[4], items: ["Pizza Margherita"], total: 214000, delivery_fee: 15000, status: "delivered", shipper_id: shipper, created_at: new Date(now - 4*60*60*1000) },
+  { user_id: cust3, rest_id: rest_ids[5], items: ["Trà Sữa Trân Châu"], total: 60000, delivery_fee: 15000, status: "pending", shipper_id: null, created_at: new Date(now - 3*60*60*1000) },
+  { user_id: cust1, rest_id: rest_ids[6], items: ["Bánh Mì Thịt Nướng"], total: 50000, delivery_fee: 15000, status: "delivered", shipper_id: shipper, created_at: new Date(now - 2*60*60*1000) },
+  { user_id: cust2, rest_id: rest_ids[7], items: ["Cơm Tấm Sườn"], total: 70000, delivery_fee: 15000, status: "preparing", shipper_id: null, created_at: new Date(now - 1*60*60*1000) },
+  { user_id: cust3, rest_id: rest_ids[8], items: ["Sushi Set"], total: 265000, delivery_fee: 15000, status: "pending", shipper_id: null, created_at: new Date(now - 30*60*1000) },
+  { user_id: cust1, rest_id: rest_ids[9], items: ["Gà Rán 6 Miếng"], total: 144000, delivery_fee: 15000, status: "delivered", shipper_id: shipper, created_at: new Date(now - 10*60*1000) }
+])
+// Lấy mảng order_ids từ insertedIds (đảm bảo đúng thứ tự và chỉ lấy orders vừa tạo)
+let order_ids = Object.values(order_inserted.insertedIds)
+print("orders: 10 đơn (mỗi đơn = 1 giỏ hàng)")
+print("order_ids đã lưu:", order_ids.length, "IDs")
+
+// ============== 6. PAYMENTS (10 thanh toán) ==============
+// THIẾT KẾ: 1 Payment = 1 Order (quan hệ 1-1)
+// Mỗi đơn hàng chỉ có 1 thanh toán duy nhất
+// Index order_id sẽ được đặt UNIQUE để đảm bảo ràng buộc 1-1
+// LƯU Ý: amount = total của order (đã bao gồm delivery_fee)
+db.payments.insertMany([
+  { order_id: order_ids[0], method: "momo",     amount: 129000, status: "success", paid_at: new Date() },
+  { order_id: order_ids[1], method: "cash",     amount: 80000,  status: "success", paid_at: new Date() },
+  { order_id: order_ids[2], method: "banking",  amount: 60000,  status: "success", paid_at: new Date() },
+  { order_id: order_ids[3], method: "momo",     amount: 90000,  status: "success", paid_at: new Date() },
+  { order_id: order_ids[4], method: "zalo_pay", amount: 214000, status: "success", paid_at: new Date() },
+  { order_id: order_ids[5], method: "momo",     amount: 60000,  status: "pending", paid_at: null },
+  { order_id: order_ids[6], method: "cash",     amount: 50000,  status: "success", paid_at: new Date() },
+  { order_id: order_ids[7], method: "banking",  amount: 70000,  status: "pending", paid_at: null },
+  { order_id: order_ids[8], method: "momo",     amount: 265000, status: "pending", paid_at: null },
+  { order_id: order_ids[9], method: "cash",     amount: 144000, status: "success", paid_at: new Date() }
+])
+print("payments: 10 thanh toán (1 payment = 1 order, quan hệ 1-1)")
+
+// Tạo index UNIQUE cho payments.order_id để đảm bảo ràng buộc 1-1
+try {
+  db.payments.createIndex({ order_id: 1 }, { unique: true })
+  print("Đã tạo index UNIQUE cho payments.order_id (đảm bảo 1 payment = 1 order)")
+} catch(e) {
+  print("Lưu ý: Index UNIQUE có thể đã tồn tại hoặc có lỗi:", e.message)
+}
+
+// ============== 7. REVIEWS (Đánh giá) ==============
+// THIẾT KẾ: 1 Order = 1 Review (quan hệ 1-1)
+// Mỗi đơn hàng chỉ có thể được đánh giá 1 lần
+// Index order_id trong reviews là UNIQUE để đảm bảo ràng buộc
+
+// Lấy menu_ids để đánh giá món ăn - tìm menu theo tên
+let menu_whopper = db.menus.findOne({ name: "Whopper Combo" })._id
+let menu_coke = db.menus.findOne({ name: "Coke Lớn" })._id
+let menu_zinger = db.menus.findOne({ name: "Zinger Burger" })._id
+let menu_cheese = db.menus.findOne({ name: "Cheese Burger" })._id
+let menu_pho = db.menus.findOne({ name: "Phở Bò Tái" })._id
+let menu_pizza = db.menus.findOne({ name: "Pizza Margherita" })._id
+let menu_banhmi = db.menus.findOne({ name: "Bánh Mì Thịt Nướng" })._id
+let menu_ga = db.menus.findOne({ name: "Gà Rán 6 Miếng" })._id
+
+// Chỉ tạo reviews cho các đơn hàng đã delivered và có shipper (từ orders vừa tạo)
+// Sử dụng order_ids từ insertedIds để đảm bảo chỉ lấy orders vừa tạo
+let delivered_orders = []
+for (let i = 0; i < order_ids.length; i++) {
+  let order = db.orders.findOne({ _id: order_ids[i] })
+  if (order && order.status === "delivered" && order.shipper_id) {
+    delivered_orders.push(order)
+  }
+}
+
+db.reviews.insertMany([
+  {
+    order_id: delivered_orders[0]._id,
+    user_id: delivered_orders[0].user_id,
+    restaurant_id: delivered_orders[0].rest_id,
+    shipper_id: delivered_orders[0].shipper_id,
+    restaurant_rating: 5,
+    restaurant_comment: "Phở rất ngon, nước dùng đậm đà! Nhà hàng phục vụ tốt.",
+    driver_rating: 5,
+    driver_comment: "Tài xế nhanh và thân thiện, giao hàng đúng giờ.",
+    menu_ratings: [
+      { menu_id: menu_pho, menu_name: "Phở Bò Tái", rating: 5, comment: "Phở rất ngon, thịt tái vừa phải" }
+    ],
+    images: ["review1.jpg"],
+    created_at: new Date(now - 7*60*60*1000)
+  },
+  {
+    order_id: delivered_orders[1]._id,
+    user_id: delivered_orders[1].user_id,
+    restaurant_id: delivered_orders[1].rest_id,
+    shipper_id: delivered_orders[1].shipper_id,
+    restaurant_rating: 4,
+    restaurant_comment: "Burger ngon nhưng hơi lâu chờ đợi.",
+    driver_rating: 4,
+    driver_comment: "Tài xế giao hàng đúng giờ.",
+    menu_ratings: [
+      { menu_id: menu_whopper, menu_name: "Whopper Combo", rating: 4, comment: "Combo đầy đủ, ngon" },
+      { menu_id: menu_coke, menu_name: "Coke Lớn", rating: 5, comment: "Nước ngọt mát lạnh" }
+    ],
+    images: [],
+    created_at: new Date(now - 6*60*60*1000)
+  },
+  {
+    order_id: delivered_orders[2]._id,
+    user_id: delivered_orders[2].user_id,
+    restaurant_id: delivered_orders[2].rest_id,
+    shipper_id: delivered_orders[2].shipper_id,
+    restaurant_rating: 5,
+    restaurant_comment: "Zinger Burger rất ngon, giòn và cay vừa phải!",
+    driver_rating: 5,
+    driver_comment: "Tài xế rất nhiệt tình, giao hàng nhanh.",
+    menu_ratings: [
+      { menu_id: menu_zinger, menu_name: "Zinger Burger", rating: 5, comment: "Burger giòn, cay vừa phải" }
+    ],
+    images: ["review2.jpg", "review3.jpg"],
+    created_at: new Date(now - 5*60*60*1000)
+  },
+  {
+    order_id: delivered_orders[3]._id,
+    user_id: delivered_orders[3].user_id,
+    restaurant_id: delivered_orders[3].rest_id,
+    shipper_id: delivered_orders[3].shipper_id,
+    restaurant_rating: 3,
+    restaurant_comment: "Cheese Burger ổn nhưng không đặc biệt.",
+    driver_rating: 4,
+    driver_comment: "Tài xế giao hàng đúng giờ.",
+    menu_ratings: [
+      { menu_id: menu_cheese, menu_name: "Cheese Burger", rating: 3, comment: "Bình thường, không có gì đặc biệt" }
+    ],
+    images: [],
+    created_at: new Date(now - 4*60*60*1000)
+  },
+  {
+    order_id: delivered_orders[4]._id,
+    user_id: delivered_orders[4].user_id,
+    restaurant_id: delivered_orders[4].rest_id,
+    shipper_id: delivered_orders[4].shipper_id,
+    restaurant_rating: 5,
+    restaurant_comment: "Pizza rất ngon, đế giòn, phô mai nhiều!",
+    driver_rating: 5,
+    driver_comment: "Tài xế rất chuyên nghiệp, giao hàng cẩn thận.",
+    menu_ratings: [
+      { menu_id: menu_pizza, menu_name: "Pizza Margherita", rating: 5, comment: "Pizza ngon, đế giòn, phô mai nhiều" }
+    ],
+    images: ["review4.jpg"],
+    created_at: new Date(now - 3*60*60*1000)
+  },
+  {
+    order_id: delivered_orders[5]._id,
+    user_id: delivered_orders[5].user_id,
+    restaurant_id: delivered_orders[5].rest_id,
+    shipper_id: delivered_orders[5].shipper_id,
+    restaurant_rating: 5,
+    restaurant_comment: "Bánh mì thịt nướng rất ngon, giòn và thơm!",
+    driver_rating: 4,
+    driver_comment: "Tài xế giao hàng nhanh.",
+    menu_ratings: [
+      { menu_id: menu_banhmi, menu_name: "Bánh Mì Thịt Nướng", rating: 5, comment: "Bánh mì giòn, thịt nướng thơm ngon" }
+    ],
+    images: [],
+    created_at: new Date(now - 1*60*60*1000)
+  },
+  {
+    order_id: delivered_orders[6]._id,
+    user_id: delivered_orders[6].user_id,
+    restaurant_id: delivered_orders[6].rest_id,
+    shipper_id: delivered_orders[6].shipper_id,
+    restaurant_rating: 2,
+    restaurant_comment: "Gà rán không ngon, hơi khô và không giòn.",
+    driver_rating: 0,
+    driver_comment: "Tài xế giao hàng rất chậm, thái độ không tốt.",
+    menu_ratings: [
+      { menu_id: menu_ga, menu_name: "Gà Rán 6 Miếng", rating: 2, comment: "Gà khô, không giòn" }
+    ],
+    images: [],
+    created_at: new Date(now - 0.5*60*60*1000)
+  }
+])
+
+// Tạo indexes cho reviews
+db.reviews.createIndex({ order_id: 1 }, { unique: true })  // Mỗi order chỉ có 1 review
+db.reviews.createIndex({ restaurant_id: 1 })
+db.reviews.createIndex({ shipper_id: 1 })
+db.reviews.createIndex({ user_id: 1 })
+db.reviews.createIndex({ created_at: -1 })
+print("reviews: 7 đánh giá (chỉ cho đơn hàng đã delivered và có shipper)")
+
+// ============== 8. HOÀN TẤT ==============
+print("\nHOÀN TẤT 100%!")
+print("Tổng: 6 users + 10 restaurants + 10 menus + 10 orders + 10 payments + 7 reviews = 53 document")
+print("\n=== THIẾT KẾ QUAN HỆ ===")
+print("1. 1 Cart (Giỏ hàng) = 1 Order (Đơn hàng)")
+print("   - Khi khách hàng checkout, toàn bộ giỏ hàng được chuyển thành 1 đơn hàng")
+print("   - Sau khi tạo order, giỏ hàng sẽ được xóa")
+print("2. 1 Order = 1 Payment (Thanh toán)")
+print("   - Mỗi đơn hàng chỉ có 1 thanh toán duy nhất (quan hệ 1-1)")
+print("   - Index order_id trong payments là UNIQUE để đảm bảo ràng buộc")
+print("3. 1 Order = 1 Review (Đánh giá)")
+print("   - Mỗi đơn hàng chỉ có thể được đánh giá 1 lần (index order_id UNIQUE)")
+print("\n=== HỆ THỐNG DOANH THU ===")
+print("1. Admin: revenue (5% trên tổng tiền món của mỗi đơn hàng)")
+print("   - Được cập nhật khi payment status = 'success'")
+print("2. Restaurant Owner: revenue (95% trên tổng tiền món của mỗi đơn hàng)")
+print("   - Được cập nhật khi payment status = 'success'")
+print("3. Shipper: delivery_earnings (tiền ship = delivery_fee)")
+print("   - Được cập nhật khi order status = 'completed' (khách xác nhận nhận hàng)")
+print("4. Order: delivery_fee (mặc định 15000đ)")
+print("   - Phí ship được tính riêng, không nằm trong doanh thu admin/restaurant")
+print("\n=== CÁC LỆNH KIỂM TRA ===")
+print("db.users.find().pretty()")
+print("db.restaurants.find().limit(3).pretty()")
+print("db.restaurants.find({owner_id: ObjectId('...')}).pretty()  // Xem nhà hàng của chủ nhà hàng")
+print("db.orders.find({status: 'pending'}).pretty()")
+print("db.menus.find({rest_id: ObjectId('...')}).pretty()  // Xem món ăn của nhà hàng")
+print("db.payments.find({order_id: ObjectId('...')}).pretty()  // Xem thanh toán của đơn hàng (chỉ có 1)")
+print("db.reviews.find({restaurant_id: ObjectId('...')}).pretty()  // Xem đánh giá của nhà hàng")
+print("db.reviews.find({shipper_id: ObjectId('...')}).pretty()  // Xem đánh giá của shipper")
+print("db.reviews.find({order_id: ObjectId('...')}).pretty()  // Xem đánh giá của đơn hàng (chỉ có 1)")

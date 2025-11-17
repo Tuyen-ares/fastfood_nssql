@@ -1,0 +1,50 @@
+💼 Chức năng Admin cần có
+1. Quản lý Người dùng (Users)
+
+✅ Xem danh sách, tìm kiếm, lọc users
+✅ Khóa/mở khóa tài khoản
+✅ Xem lịch sử đặt hàng của user
+✅ Xử lý khiếu nại từ user
+
+2. Quản lý Nhà hàng (Restaurants)
+
+✅ Duyệt nhà hàng đăng ký mới
+✅ Xem chi tiết, chỉnh sửa thông tin nhà hàng
+✅ Tạm ngưng/khóa nhà hàng vi phạm
+✅ Xem thống kê doanh thu của từng nhà hàng
+✅ Quản lý menu (nếu cần)
+
+3. Quản lý Tài xế (Drivers)
+
+✅ Duyệt tài xế đăng ký mới
+✅ Xác minh giấy tờ (CCCD, bằng lái)
+✅ Theo dõi tài xế online/offline
+✅ Xử lý khiếu nại về tài xế
+✅ Xem thống kê hiệu suất giao hàng
+
+4. Quản lý Đơn hàng (Orders)
+
+✅ Xem tất cả đơn hàng
+✅ Theo dõi trạng thái real-time
+✅ Can thiệp vào đơn hàng có vấn đề
+✅ Hoàn tiền, hủy đơn (với lý do)
+
+5. Quản lý Khuyến mãi (Promotions)
+
+✅ Tạo mã giảm giá mới
+✅ Chỉnh sửa, vô hiệu hóa mã
+✅ Xem thống kê sử dụng mã
+
+6. Xử lý Tranh chấp & Khiếu nại
+
+✅ Xem danh sách khiếu nại
+✅ Chat với user/nhà hàng/tài xế
+✅ Quyết định hoàn tiền, bồi thường
+
+7. Báo cáo & Thống kê
+
+✅ Doanh thu theo ngày/tuần/tháng
+✅ Số đơn hàng thành công/thất bại
+✅ Top nhà hàng/món ăn bán chạy
+✅ Đánh giá trung bình hệ thống
+✅ Tỷ lệ hủy đơn

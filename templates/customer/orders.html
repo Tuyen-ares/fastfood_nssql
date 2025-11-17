@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}Đơn hàng của tôi - FastFood{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h2 class="mb-4">Đơn hàng của tôi</h2>
+    
+    {% if orders %}
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Mã đơn</th>
+                    <th>Ngày đặt</th>
+                    <th>Tổng tiền</th>
+                    <th>Trạng thái</th>
+                    <th>Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in orders %}
+                <tr>
+                    <td>#{{ order.get('_id')|string|truncate(8, True, '') }}</td>
+                    <td>{{ order.get('created_at').strftime('%d/%m/%Y %H:%M') if order.get('created_at') else 'N/A' }}</td>
+                    <td>{{ "{:,.0f}".format(order.get('total', 0)) }} đ</td>
+                    <td>
+                        <span class="badge bg-{{ 'success' if order.get('status') == 'delivered' else 'warning' if order.get('status') == 'preparing' else 'info' if order.get('status') == 'pending' else 'primary' if order.get('status') == 'delivering' else 'danger' }}">
+                            {% if order.get('status') == 'delivered' %}
+                                <i class="bi bi-check-circle"></i> Đã giao
+                            {% elif order.get('status') == 'preparing' %}
+                                <i class="bi bi-clock"></i> Đang chuẩn bị
+                            {% elif order.get('status') == 'pending' %}
+                                <i class="bi bi-hourglass-split"></i> Chờ xác nhận
+                            {% elif order.get('status') == 'delivering' %}
+                                <i class="bi bi-truck"></i> Đang giao hàng
+                            {% elif order.get('status') == 'cancelled' %}
+                                <i class="bi bi-x-circle"></i> Đã hủy
+                            {% else %}
+                                {{ order.get('status', 'N/A') }}
+                            {% endif %}
+                        </span>
+                        {% if order.get('status') == 'delivering' %}
+                            <br><small class="text-primary"><i class="bi bi-info-circle"></i> Tài xế đang trên đường đến bạn!</small>
+                        {% elif order.get('status') == 'preparing' %}
+                            <br><small class="text-info"><i class="bi bi-info-circle"></i> Nhà hàng đang chuẩn bị món ăn</small>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{{ url_for('customer.order_detail', order_id=order.get('_id')) }}" class="btn btn-sm btn-info">Chi tiết</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+        <i class="bi bi-inbox display-1 text-muted"></i>
+        <p class="text-muted mt-3">Bạn chưa có đơn hàng nào</p>
+        <a href="{{ url_for('customer.restaurants') }}" class="btn btn-primary">Đặt món ngay</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+

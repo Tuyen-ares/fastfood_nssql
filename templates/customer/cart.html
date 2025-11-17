@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+
+{% block title %}Giỏ hàng - FastFood{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h2 class="mb-4">Giỏ hàng của tôi</h2>
+    
+    {% if cart_items %}
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Món</th>
+                                <th>Số lượng</th>
+                                <th>Giá</th>
+                                <th>Tổng</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in cart_items %}
+                            <tr>
+                                <td>
+                                    <strong>{{ item.menu.name }}</strong>
+                                    {% if item.menu.get('cat') %}
+                                    <br><small class="text-muted"><i class="bi bi-tag"></i> {{ item.menu.get('cat') }}</small>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="input-group" style="width: 120px;">
+                                        <button class="btn btn-sm btn-outline-secondary" type="button" onclick="updateQuantity('{{ item.menu._id }}', -1)">
+                                            <i class="bi bi-dash"></i>
+                                        </button>
+                                        <input type="number" class="form-control form-control-sm text-center" 
+                                               id="quantity_{{ item.menu._id }}" 
+                                               value="{{ item.quantity }}" 
+                                               min="1" 
+                                               max="99"
+                                               onchange="updateQuantityInput('{{ item.menu._id }}', this.value)">
+                                        <button class="btn btn-sm btn-outline-secondary" type="button" onclick="updateQuantity('{{ item.menu._id }}', 1)">
+                                            <i class="bi bi-plus"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                                <td>{{ "{:,.0f}".format(item.menu.price) }} đ</td>
+                                <td><strong id="total_{{ item.menu._id }}">{{ "{:,.0f}".format(item.total) }} đ</strong></td>
+                                <td>
+                                    <form method="POST" action="{{ url_for('customer.remove_from_cart', menu_id=item.menu._id) }}" style="display: inline;">
+                                        <button type="submit" class="btn btn-sm btn-danger">
+                                            <i class="bi bi-trash"></i> Xóa
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Tổng cộng</h5>
+                    <p class="card-text">
+                        <strong>Tổng tiền: <span id="grand_total">{{ "{:,.0f}".format(total) }}</span> đ</strong>
+                    </p>
+                    <a href="{{ url_for('customer.checkout') }}" class="btn btn-primary w-100">
+                        <i class="bi bi-credit-card"></i> Thanh toán
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-cart-x display-1 text-muted"></i>
+            <p class="text-muted mt-3">Giỏ hàng của bạn đang trống</p>
+            <a href="{{ url_for('customer.restaurants') }}" class="btn btn-primary">Xem nhà hàng</a>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+// Menu prices for calculation
+const menuPrices = {
+    {% for item in cart_items %}
+    '{{ item.menu._id }}': {{ item.menu.price }},
+    {% endfor %}
+};
+
+// Update quantity with +/- buttons
+function updateQuantity(menuId, change) {
+    const input = document.getElementById('quantity_' + menuId);
+    let currentQuantity = parseInt(input.value) || 1;
+    let newQuantity = currentQuantity + change;
+    
+    // Validate min/max
+    if (newQuantity < 1) newQuantity = 1;
+    if (newQuantity > 99) newQuantity = 99;
+    
+    input.value = newQuantity;
+    updateQuantityOnServer(menuId, newQuantity);
+}
+
+// Update quantity from input field
+function updateQuantityInput(menuId, value) {
+    let quantity = parseInt(value) || 1;
+    
+    // Validate min/max
+    if (quantity < 1) quantity = 1;
+    if (quantity > 99) quantity = 99;
+    
+    const input = document.getElementById('quantity_' + menuId);
+    input.value = quantity;
+    updateQuantityOnServer(menuId, quantity);
+}
+
+// Update quantity on server
+function updateQuantityOnServer(menuId, quantity) {
+    fetch('{{ url_for("customer.update_cart_quantity") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            menu_id: menuId,
+            quantity: quantity
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Update item total
+            const price = menuPrices[menuId];
+            const total = price * quantity;
+            document.getElementById('total_' + menuId).textContent = formatNumber(total) + ' đ';
+            
+            // Update grand total
+            updateGrandTotal();
+        } else {
+            alert('Có lỗi xảy ra: ' + (data.message || 'Không thể cập nhật số lượng'));
+            // Reload page to sync
+            location.reload();
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Có lỗi xảy ra khi cập nhật số lượng');
+        location.reload();
+    });
+}
+
+// Update grand total
+function updateGrandTotal() {
+    let grandTotal = 0;
+    {% for item in cart_items %}
+    const quantity_{{ item.menu._id }} = parseInt(document.getElementById('quantity_{{ item.menu._id }}').value) || 0;
+    grandTotal += menuPrices['{{ item.menu._id }}'] * quantity_{{ item.menu._id }};
+    {% endfor %}
+    document.getElementById('grand_total').textContent = formatNumber(grandTotal);
+}
+
+// Format number with commas
+function formatNumber(num) {
+    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+</script>
+{% endblock %}
+

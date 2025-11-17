@@ -1,0 +1,125 @@
+🛒 Chức năng Khách hàng (Customer) cần có
+
+1. Quản lý Tài khoản
+✅ Đăng ký tài khoản mới
+✅ Đăng nhập/Đăng xuất
+✅ Xem và chỉnh sửa thông tin cá nhân
+✅ Quản lý địa chỉ giao hàng (thêm/sửa/xóa)
+✅ Đổi mật khẩu
+✅ Xem lịch sử đơn hàng
+
+2. Tìm kiếm & Duyệt Sản phẩm
+✅ Xem danh sách nhà hàng gần đây (theo vị trí)
+✅ Tìm kiếm nhà hàng theo tên, địa chỉ
+✅ Lọc nhà hàng theo:
+   - Khoảng cách (gần nhất)
+   - Đánh giá (cao nhất)
+   - Loại món ăn (burger, pizza, phở, cơm...)
+   - Giá cả
+   - Thời gian mở cửa
+✅ Xem chi tiết nhà hàng:
+   - Thông tin, địa chỉ, giờ mở cửa
+   - Menu đầy đủ
+   - Đánh giá từ khách hàng khác
+   - Hình ảnh
+
+3. Xem & Quản lý Menu
+✅ Xem danh sách món ăn của nhà hàng
+✅ Xem chi tiết món ăn:
+   - Tên, mô tả, giá
+   - Hình ảnh
+   - Đánh giá
+   - Tình trạng (còn hàng/hết hàng)
+✅ Tìm kiếm món ăn trong menu
+✅ Lọc món theo:
+   - Danh mục (combo, burger, drink, side...)
+   - Giá (từ thấp đến cao, ngược lại)
+   - Phổ biến nhất
+
+4. Giỏ hàng (Shopping Cart)
+✅ Thêm món vào giỏ hàng
+✅ Xem giỏ hàng hiện tại
+✅ Cập nhật số lượng món trong giỏ
+✅ Xóa món khỏi giỏ hàng
+✅ Xóa toàn bộ giỏ hàng
+✅ Xem tổng tiền tạm tính
+✅ Lưu giỏ hàng (để mua sau)
+
+5. Đặt hàng (Order)
+✅ Tạo đơn hàng từ giỏ hàng
+✅ Chọn địa chỉ giao hàng
+✅ Chọn thời gian nhận hàng (ngay/đặt trước)
+✅ Áp dụng mã giảm giá (nếu có)
+✅ Xem chi tiết đơn hàng:
+   - Danh sách món
+   - Tổng tiền món
+   - Phí giao hàng
+   - Giảm giá (nếu có)
+   - Tổng thanh toán
+✅ Xác nhận đặt hàng
+
+6. Thanh toán (Payment)
+✅ Chọn phương thức thanh toán:
+   - VnPay (thanh toán online)
+   - Thẻ tín dụng/ghi nợ
+   - Thanh toán khi nhận hàng (COD - Cash on Delivery)
+✅ Thanh toán qua VnPay:
+   - Tích hợp cổng thanh toán VnPay
+   - Chuyển hướng đến trang thanh toán
+   - Xác nhận thanh toán thành công/thất bại
+✅ Thanh toán bằng thẻ:
+   - Nhập thông tin thẻ
+   - Xác thực (3D Secure nếu có)
+   - Xác nhận giao dịch
+✅ Thanh toán trực tiếp (COD):
+   - Xác nhận đơn hàng
+   - Thanh toán khi nhận hàng
+
+7. Theo dõi Đơn hàng
+✅ Xem danh sách đơn hàng của mình
+✅ Xem chi tiết từng đơn hàng
+✅ Theo dõi trạng thái đơn hàng real-time:
+   - pending (chờ xác nhận)
+   - preparing (đang chuẩn bị)
+   - delivering (đang giao)
+   - delivered (đã giao)
+   - cancelled (đã hủy)
+✅ Xem thông tin shipper (nếu đã được gán)
+✅ Xem vị trí shipper trên bản đồ (nếu có)
+✅ Nhận thông báo cập nhật trạng thái đơn hàng
+
+8. Đánh giá & Phản hồi
+✅ Đánh giá nhà hàng sau khi nhận hàng:
+   - Điểm số (1-5 sao)
+   - Nhận xét bằng văn bản
+✅ Đánh giá món ăn
+✅ Đánh giá shipper
+✅ Xem đánh giá của khách hàng khác
+✅ Báo cáo vấn đề với đơn hàng
+
+9. Khiếu nại & Hỗ trợ
+✅ Tạo khiếu nại về đơn hàng
+✅ Chat với admin/nhà hàng
+✅ Yêu cầu hoàn tiền
+✅ Hủy đơn hàng (nếu chưa được chuẩn bị)
+✅ Xem lịch sử khiếu nại
+
+10. Khuyến mãi & Ưu đãi
+✅ Xem danh sách mã giảm giá hiện có
+✅ Áp dụng mã giảm giá khi đặt hàng
+✅ Xem lịch sử sử dụng mã
+✅ Nhận thông báo khuyến mãi mới
+✅ Xem chương trình khuyến mãi của nhà hàng
+
+11. Tìm kiếm Nâng cao
+✅ Tìm kiếm theo món ăn yêu thích
+✅ Lưu nhà hàng yêu thích
+✅ Xem nhà hàng đã đặt trước đó
+✅ Gợi ý nhà hàng dựa trên lịch sử đặt hàng
+
+12. Thông báo
+✅ Nhận thông báo đơn hàng mới
+✅ Thông báo cập nhật trạng thái đơn hàng
+✅ Thông báo khuyến mãi
+✅ Thông báo từ admin/nhà hàng
+

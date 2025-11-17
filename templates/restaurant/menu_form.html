@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}{{ 'Sửa' if menu else 'Thêm' }} Món ăn{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3>{{ 'Sửa' if menu else 'Thêm' }} Món ăn</h3>
+                </div>
+                <div class="card-body">
+                    <form method="POST" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Tên món <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="name" name="name" 
+                                   value="{{ menu.get('name', '') if menu else '' }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="price" class="form-label">Giá (VND) <span class="text-danger">*</span></label>
+                            <input type="number" step="1000" class="form-control" id="price" name="price" 
+                                   value="{{ menu.get('price', '') if menu else '' }}" required min="0">
+                        </div>
+                        <div class="mb-3">
+                            <label for="category" class="form-label">Danh mục</label>
+                            <input type="text" class="form-control" id="category" name="category" 
+                                   value="{{ menu.get('cat', '') if menu else '' }}" 
+                                   placeholder="VD: burger, pizza, drink">
+                        </div>
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Mô tả</label>
+                            <textarea class="form-control" id="description" name="description" rows="3">{{ menu.get('description', '') if menu else '' }}</textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="image_file" class="form-label">Hình ảnh món ăn</label>
+                            <input type="file" class="form-control" id="image_file" name="image_file" 
+                                   accept="image/png,image/jpeg,image/jpg,image/gif,image/webp">
+                            <small class="form-text text-muted">
+                                Chọn ảnh từ máy tính (PNG, JPG, JPEG, GIF, WEBP) hoặc nhập URL bên dưới
+                            </small>
+                        </div>
+                        <div class="mb-3">
+                            <label for="image_url" class="form-label">Hoặc URL hình ảnh</label>
+                            <input type="url" class="form-control" id="image_url" name="image_url" 
+                                   value="{{ menu.get('image_url', '') if menu else '' }}" 
+                                   placeholder="https://example.com/image.jpg">
+                            <small class="form-text text-muted">
+                                Nếu đã upload ảnh ở trên, URL này sẽ bị bỏ qua
+                            </small>
+                        </div>
+                        {% if menu and menu.get('image_url') %}
+                        <div class="mb-3">
+                            <label class="form-label">Ảnh hiện tại</label><br>
+                            <img src="{{ menu.image_url }}" alt="{{ menu.get('name', '') }}" 
+                                 style="max-width: 300px; max-height: 200px; object-fit: cover;" 
+                                 class="img-thumbnail">
+                        </div>
+                        {% endif %}
+                        {% if menu %}
+                        <div class="mb-3">
+                            <label for="status" class="form-label">Trạng thái</label>
+                            <select class="form-select" id="status" name="status">
+                                <option value="available" {% if menu.get('status') == 'available' %}selected{% endif %}>Có sẵn</option>
+                                <option value="unavailable" {% if menu.get('status') == 'unavailable' %}selected{% endif %}>Hết hàng</option>
+                            </select>
+                        </div>
+                        {% endif %}
+                        <button type="submit" class="btn btn-primary">{{ 'Cập nhật' if menu else 'Thêm' }}</button>
+                        <a href="{{ url_for('restaurant.menus') }}" class="btn btn-secondary">Hủy</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

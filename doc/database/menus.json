@@ -1,0 +1,83 @@
+[
+  {
+    "rest_id": "REST_ID_0",
+    "name": "Whopper Combo",
+    "price": 99000,
+    "cat": "combo",
+    "status": "available",
+    "created_at": { "$date": "2024-01-01T00:00:00.000Z" }
+  },
+  {
+    "rest_id": "REST_ID_0",
+    "name": "Coke Lớn",
+    "price": 15000,
+    "cat": "drink",
+    "status": "available",
+    "created_at": { "$date": "2024-01-01T00:00:00.000Z" }
+  },
+  {
+    "rest_id": "REST_ID_1",
+    "name": "Zinger Burger",
+    "price": 65000,
+    "cat": "burger",
+    "status": "available",
+    "created_at": { "$date": "2024-01-01T00:00:00.000Z" }
+  },
+  {
+    "rest_id": "REST_ID_1",
+    "name": "Khoai Tây Chiên",
+    "price": 35000,
+    "cat": "side",
+    "status": "available",
+    "created_at": { "$date": "2024-01-01T00:00:00.000Z" }
+  },
+  {
+    "rest_id": "REST_ID_2",
+    "name": "Cheese Burger",
+    "price": 45000,
+    "cat": "burger",
+    "status": "available",
+    "created_at": { "$date": "2024-01-01T00:00:00.000Z" }
+  },
+  {
+    "rest_id": "REST_ID_3",
+    "name": "Phở Bò Tái",
+    "price": 75000,
+    "cat": "phở",
+    "status": "available",
+    "created_at": { "$date": "2024-01-01T00:00:00.000Z" }
+  },
+  {
+    "rest_id": "REST_ID_4",
+    "name": "Pizza Margherita",
+    "price": 199000,
+    "cat": "pizza",
+    "status": "available",
+    "created_at": { "$date": "2024-01-01T00:00:00.000Z" }
+  },
+  {
+    "rest_id": "REST_ID_5",
+    "name": "Trà Sữa Trân Châu",
+    "price": 45000,
+    "cat": "drink",
+    "status": "available",
+    "created_at": { "$date": "2024-01-01T00:00:00.000Z" }
+  },
+  {
+    "rest_id": "REST_ID_6",
+    "name": "Bánh Mì Thịt Nướng",
+    "price": 35000,
+    "cat": "bánh mì",
+    "status": "available",
+    "created_at": { "$date": "2024-01-01T00:00:00.000Z" }
+  },
+  {
+    "rest_id": "REST_ID_7",
+    "name": "Cơm Tấm Sườn",
+    "price": 55000,
+    "cat": "cơm",
+    "status": "available",
+    "created_at": { "$date": "2024-01-01T00:00:00.000Z" }
+  }
+]
+

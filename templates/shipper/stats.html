@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}Thống kê - Shipper{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h2 class="mb-4">Thống kê Giao hàng</h2>
+    
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Tổng đơn</h5>
+                    <h3 class="text-primary">{{ stats.get('total_orders', 0) }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Hoàn thành</h5>
+                    <h3 class="text-success">{{ stats.get('completed_orders', 0) }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Đã hủy</h5>
+                    <h3 class="text-danger">{{ stats.get('cancelled_orders', 0) }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Đánh giá TB</h5>
+                    <h3 class="text-warning">
+                        <i class="bi bi-star-fill"></i> {{ "%.1f"|format(stats.get('avg_rating', 0)) }}
+                    </h3>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="card-header">
+            <h5>Thông tin tài khoản</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Tên:</strong> {{ user.get('name', 'N/A') }}</p>
+                    <p><strong>Số điện thoại:</strong> {{ user.get('phone', 'N/A') }}</p>
+                    <p><strong>Phương tiện:</strong> {{ user.get('vehicle', 'N/A') }}</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Biển số:</strong> {{ user.get('plate', 'N/A') }}</p>
+                    <p><strong>Trạng thái:</strong> 
+                        <span class="badge bg-{{ 'success' if user.get('status') == 'active' else 'warning' if user.get('status') == 'pending' else 'danger' }}">
+                            {{ user.get('status', 'N/A') }}
+                        </span>
+                    </p>
+                    <p><strong>Online:</strong> 
+                        <span class="badge bg-{{ 'success' if user.get('is_online') else 'secondary' }}">
+                            {{ 'Có' if user.get('is_online') else 'Không' }}
+                        </span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="mt-3">
+        <a href="{{ url_for('shipper.dashboard') }}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Quay lại Dashboard
+        </a>
+    </div>
+</div>
+{% endblock %}
+

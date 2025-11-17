@@ -1,0 +1,63 @@
+[
+  {
+    "phone": "0999999999",
+    "name": "ADMIN",
+    "password": "admin123",
+    "role": "admin",
+    "status": "active",
+    "revenue": 0,
+    "created_at": { "$date": "2024-01-01T00:00:00.000Z" }
+  },
+  {
+    "phone": "0901000001",
+    "name": "Nam Khách",
+    "password": "nam123",
+    "role": "customer",
+    "status": "active",
+    "created_at": { "$date": "2024-01-01T00:00:00.000Z" }
+  },
+  {
+    "phone": "0901000002",
+    "name": "Bé Khách",
+    "password": "be123",
+    "role": "customer",
+    "status": "active",
+    "created_at": { "$date": "2024-01-01T00:00:00.000Z" }
+  },
+  {
+    "phone": "0901000003",
+    "name": "Anh Khách",
+    "password": "anh123",
+    "role": "customer",
+    "status": "active",
+    "created_at": { "$date": "2024-01-01T00:00:00.000Z" }
+  },
+  {
+    "phone": "0888888888",
+    "name": "Shipper A",
+    "password": "ship123",
+    "role": "shipper",
+    "status": "active",
+    "vehicle": "Wave",
+    "plate": "59H1-12345",
+    "is_online": false,
+    "delivery_stats": {
+      "total_orders": 0,
+      "completed_orders": 0,
+      "cancelled_orders": 0,
+      "avg_rating": 0
+    },
+    "delivery_earnings": 0,
+    "created_at": { "$date": "2024-01-01T00:00:00.000Z" }
+  },
+  {
+    "phone": "0777777777",
+    "name": "Chủ Nhà Hàng A",
+    "password": "owner123",
+    "role": "restaurant_owner",
+    "status": "active",
+    "revenue": 0,
+    "created_at": { "$date": "2024-01-01T00:00:00.000Z" }
+  }
+]
+

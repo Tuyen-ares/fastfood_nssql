@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - FastFood{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h2 class="mb-4">Admin Dashboard</h2>
+    
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Tổng Users</h5>
+                    <h3 class="text-primary">{{ stats.total_users }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Nhà hàng</h5>
+                    <h3 class="text-success">{{ stats.total_restaurants }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Tổng đơn hàng</h5>
+                    <h3 class="text-info">{{ stats.total_orders }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Đơn chờ xử lý</h5>
+                    <h3 class="text-warning">{{ stats.pending_orders }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Revenue Card -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card border-success">
+                <div class="card-body">
+                    <h5 class="card-title text-success">
+                        <i class="bi bi-cash-stack"></i> Doanh thu (5% trên mỗi đơn hàng)
+                    </h5>
+                    <h2 class="text-success mb-0">{{ "{:,.0f}".format(stats.get('revenue', 0)) }} đ</h2>
+                    <small class="text-muted">Tổng doanh thu từ phí dịch vụ (5% trên tổng tiền món của mỗi đơn hàng)</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-md-4 mb-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Chờ duyệt</h5>
+                    <p class="card-text">
+                        Nhà hàng: {{ stats.pending_restaurants }}<br>
+                        Tài xế: {{ stats.pending_shippers }}<br>
+                        Chủ nhà hàng: {{ stats.pending_restaurant_owners }}
+                    </p>
+                    <a href="{{ url_for('admin.users') }}?status=pending" class="btn btn-primary">Quản lý</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Chủ Nhà hàng</h5>
+                    <p class="card-text">
+                        Xem mapping chủ nhà hàng - nhà hàng
+                    </p>
+                    <a href="{{ url_for('admin.restaurant_owners') }}" class="btn btn-info">Xem chi tiết</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Orders -->
+    <h3 class="mb-3">Đơn hàng gần đây</h3>
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Mã đơn</th>
+                    <th>Khách hàng</th>
+                    <th>Tổng tiền</th>
+                    <th>Trạng thái</th>
+                    <th>Ngày</th>
+                    <th>Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in orders %}
+                <tr>
+                    <td>#{{ order._id|string|truncate(8, True, '') }}</td>
+                    <td>{{ order.get('user_id', 'N/A') }}</td>
+                    <td>{{ "{:,.0f}".format(order.get('total', 0)) }} đ</td>
+                    <td>
+                        <span class="badge bg-{{ 'success' if order.get('status') == 'delivered' else 'warning' }}">
+                            {{ order.get('status', 'N/A') }}
+                        </span>
+                    </td>
+                    <td>{{ order.get('created_at').strftime('%d/%m/%Y') if order.get('created_at') else '' }}</td>
+                    <td>
+                        <a href="{{ url_for('admin.order_detail', order_id=order._id) }}" class="btn btn-sm btn-info">Chi tiết</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+

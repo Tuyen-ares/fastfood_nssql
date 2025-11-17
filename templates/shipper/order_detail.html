@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+
+{% block title %}Chi tiết Đơn hàng - Shipper{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row">
+        <div class="col-md-12">
+            <h2 class="mb-4">Chi tiết Đơn hàng</h2>
+            
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5>Thông tin đơn hàng</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Mã đơn:</strong> #{{ order._id|string }}</p>
+                            <p><strong>Trạng thái:</strong> 
+                                <span class="badge bg-{{ 'warning' if order.get('status') == 'pending' else 'info' if order.get('status') == 'preparing' else 'primary' if order.get('status') == 'delivering' else 'success' if order.get('status') == 'delivered' else 'danger' }}">
+                                    {{ order.get('status', 'N/A') }}
+                                </span>
+                            </p>
+                            <p><strong>Ngày tạo:</strong> 
+                                {% if order.get('created_at') %}
+                                    {{ order.created_at.strftime('%d/%m/%Y %H:%M:%S') }}
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Khách hàng:</strong> {{ customer.get('name', 'N/A') if customer else 'N/A' }}</p>
+                            <p><strong>Số điện thoại:</strong> {{ customer.get('phone', 'N/A') if customer else 'N/A' }}</p>
+                            <p><strong>Nhà hàng:</strong> {{ restaurant.get('name', 'N/A') if restaurant else 'N/A' }}</p>
+                            <p><strong>Địa chỉ nhà hàng:</strong> {{ restaurant.get('addr', 'N/A') if restaurant else 'N/A' }}</p>
+                        </div>
+                    </div>
+                    
+                    {% if order.get('delivery_address') %}
+                    <div class="mt-3">
+                        <p><strong>Địa chỉ giao hàng:</strong> {{ order.delivery_address }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5>Chi tiết món ăn</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Món ăn</th>
+                                    <th>Số lượng</th>
+                                    <th>Đơn giá</th>
+                                    <th>Thành tiền</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% set order_items = order.get('items', []) %}
+                                {% if order_items %}
+                                    {% for item in order_items %}
+                                    <tr>
+                                        {% if item is string %}
+                                            {# Old format: items is array of strings #}
+                                            <td>{{ item }}</td>
+                                            <td>1</td>
+                                            <td>-</td>
+                                            <td>-</td>
+                                        {% else %}
+                                            {# New format: items is array of objects #}
+                                            <td>{{ item.get('name', 'N/A') }}</td>
+                                            <td>{{ item.get('quantity', 0) }}</td>
+                                            <td>{{ "{:,.0f}".format(item.get('price', 0)) }} đ</td>
+                                            <td>{{ "{:,.0f}".format(item.get('quantity', 0) * item.get('price', 0)) }} đ</td>
+                                        {% endif %}
+                                    </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="4" class="text-center text-muted">Không có món nào</td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <th colspan="3">Tổng tiền món:</th>
+                                    <th>{{ "{:,.0f}".format(order.get('total', 0)) }} đ</th>
+                                </tr>
+                                {% if order.get('delivery_fee') %}
+                                <tr>
+                                    <th colspan="3">Phí giao hàng:</th>
+                                    <th>{{ "{:,.0f}".format(order.get('delivery_fee', 0)) }} đ</th>
+                                </tr>
+                                {% endif %}
+                                <tr class="table-primary">
+                                    <th colspan="3">Tổng cộng:</th>
+                                    <th>{{ "{:,.0f}".format(order.get('total', 0) + order.get('delivery_fee', 0)) }} đ</th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            {% if order.get('status') != 'delivered' %}
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5>Cập nhật trạng thái</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('shipper.update_order_status', order_id=order._id) }}">
+                        <div class="mb-3">
+                            <label for="status" class="form-label">Trạng thái mới</label>
+                            <select name="status" id="status" class="form-select" required>
+                                {% if order.get('status') == 'preparing' %}
+                                    <option value="delivering">Đang giao hàng</option>
+                                {% elif order.get('status') == 'delivering' %}
+                                    <option value="delivered">Đã giao hàng</option>
+                                {% endif %}
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i> Cập nhật
+                        </button>
+                    </form>
+                </div>
+            </div>
+            {% endif %}
+            
+            <div class="mt-3">
+                <a href="{{ url_for('shipper.dashboard') }}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i> Quay lại
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

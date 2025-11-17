@@ -1,0 +1,85 @@
+/* Custom styles for FastFood Delivery System */
+
+/* Smooth transitions for cards */
+.card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Image hover effect */
+.card-img-top {
+    transition: transform 0.3s ease;
+}
+
+.card:hover .card-img-top {
+    transform: scale(1.05);
+}
+
+/* Rounded corners for modern look */
+.card {
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+/* Button hover effects */
+.btn {
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Smooth scroll */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Category section styling */
+.category-section {
+    margin-bottom: 3rem;
+}
+
+/* Menu card improvements */
+.menu-card {
+    border: none;
+    border-radius: 15px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.menu-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+}
+
+/* Image container with rounded corners */
+.image-container {
+    overflow: hidden;
+    border-radius: 15px 15px 0 0;
+}
+
+/* Price styling */
+.price-text {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #e74c3c;
+}
+
+/* Restaurant name styling */
+.restaurant-name {
+    font-size: 0.85rem;
+    color: #7f8c8d;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .card-img-top {
+        height: 150px !important;
+    }
+}

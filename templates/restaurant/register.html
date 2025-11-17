@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}Đăng ký Nhà hàng{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Đăng ký Nhà hàng</h3>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Tên nhà hàng <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="name" name="name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="addr" class="form-label">Địa chỉ <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="addr" name="addr" required>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="open" class="form-label">Giờ mở cửa <span class="text-danger">*</span></label>
+                                <input type="time" class="form-control" id="open" name="open" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="close" class="form-label">Giờ đóng cửa <span class="text-danger">*</span></label>
+                                <input type="time" class="form-control" id="close" name="close" required>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="lat" class="form-label">Vĩ độ (Latitude)</label>
+                                <input type="number" step="any" class="form-control" id="lat" name="lat" placeholder="VD: 10.7769">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="lng" class="form-label">Kinh độ (Longitude)</label>
+                                <input type="number" step="any" class="form-control" id="lng" name="lng" placeholder="VD: 106.6995">
+                            </div>
+                        </div>
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle"></i> Nhà hàng của bạn sẽ được gửi đến admin để duyệt. Vui lòng chờ thông báo.
+                        </div>
+                        <button type="submit" class="btn btn-primary">Đăng ký</button>
+                        <a href="{{ url_for('restaurant.dashboard') }}" class="btn btn-secondary">Hủy</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

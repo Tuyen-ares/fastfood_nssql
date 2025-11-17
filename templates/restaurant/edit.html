@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}Chỉnh sửa Nhà hàng{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Chỉnh sửa Thông tin Nhà hàng</h3>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Tên nhà hàng <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="name" name="name" value="{{ restaurant.get('name', '') }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="addr" class="form-label">Địa chỉ <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="addr" name="addr" value="{{ restaurant.get('addr', '') }}" required>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="open" class="form-label">Giờ mở cửa <span class="text-danger">*</span></label>
+                                <input type="time" class="form-control" id="open" name="open" value="{{ restaurant.get('open', '') }}" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="close" class="form-label">Giờ đóng cửa <span class="text-danger">*</span></label>
+                                <input type="time" class="form-control" id="close" name="close" value="{{ restaurant.get('close', '') }}" required>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="lat" class="form-label">Vĩ độ (Latitude)</label>
+                                <input type="number" step="any" class="form-control" id="lat" name="lat" 
+                                       value="{{ restaurant.get('loc', {}).get('coordinates', [])[1] if restaurant.get('loc') else '' }}" 
+                                       placeholder="VD: 10.7769">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="lng" class="form-label">Kinh độ (Longitude)</label>
+                                <input type="number" step="any" class="form-control" id="lng" name="lng" 
+                                       value="{{ restaurant.get('loc', {}).get('coordinates', [])[0] if restaurant.get('loc') else '' }}" 
+                                       placeholder="VD: 106.6995">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Cập nhật</button>
+                        <a href="{{ url_for('restaurant.dashboard') }}" class="btn btn-secondary">Hủy</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

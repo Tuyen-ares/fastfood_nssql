@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - FastFood{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h2 class="mb-4">Xin chào, {{ user.get('name', 'Khách hàng') }}!</h2>
+    
+    {# Thông báo đơn hàng đang xử lý #}
+    {% if active_orders %}
+    <div class="alert alert-info alert-dismissible fade show" role="alert">
+        <h5 class="alert-heading">
+            <i class="bi bi-bell-fill"></i> Thông báo đơn hàng
+        </h5>
+        <hr>
+        {% for order in active_orders %}
+        <div class="mb-2">
+            <strong>Đơn hàng #{{ order.get('_id')|string|truncate(8, True, '') }}</strong>
+            - 
+            <span class="badge bg-{{ 'info' if order.get('status') == 'preparing' else 'primary' }}">
+                {% if order.get('status') == 'preparing' %}
+                    <i class="bi bi-clock"></i> Đang chuẩn bị
+                {% elif order.get('status') == 'delivering' %}
+                    <i class="bi bi-truck"></i> Đang giao hàng
+                {% endif %}
+            </span>
+            {% if order.get('status') == 'delivering' %}
+                <span class="text-muted">- Tài xế đang trên đường đến bạn!</span>
+            {% elif order.get('status') == 'preparing' %}
+                <span class="text-muted">- Nhà hàng đang chuẩn bị món ăn của bạn</span>
+            {% endif %}
+            <a href="{{ url_for('customer.order_detail', order_id=order.get('_id')) }}" class="btn btn-sm btn-outline-primary ms-2">
+                Xem chi tiết
+            </a>
+        </div>
+        {% endfor %}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endif %}
+    
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Đơn hàng gần đây</h5>
+                    <h3 class="text-primary">{{ orders|length }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Tổng đơn hàng</h5>
+                    <h3 class="text-success">{{ orders|length }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <a href="{{ url_for('customer.restaurants') }}" class="btn btn-primary">Đặt món ngay</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <h3 class="mb-3">Đơn hàng gần đây</h3>
+    {% if orders %}
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Mã đơn</th>
+                        <th>Nhà hàng</th>
+                        <th>Tổng tiền</th>
+                        <th>Trạng thái</th>
+                        <th>Ngày đặt</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in orders %}
+                    <tr>
+                        <td>#{{ order.get('_id')|string|truncate(8, True, '') }}</td>
+                        <td>{{ order.get('rest_id') }}</td>
+                        <td>{{ "{:,.0f}".format(order.get('total', 0)) }} đ</td>
+                        <td>
+                            <span class="badge bg-{{ 'success' if order.get('status') == 'delivered' else 'warning' if order.get('status') == 'preparing' else 'info' if order.get('status') == 'pending' else 'primary' if order.get('status') == 'delivering' else 'danger' }}">
+                                {% if order.get('status') == 'delivered' %}
+                                    <i class="bi bi-check-circle"></i> Đã giao
+                                {% elif order.get('status') == 'preparing' %}
+                                    <i class="bi bi-clock"></i> Đang chuẩn bị
+                                {% elif order.get('status') == 'pending' %}
+                                    <i class="bi bi-hourglass-split"></i> Chờ xác nhận
+                                {% elif order.get('status') == 'delivering' %}
+                                    <i class="bi bi-truck"></i> Đang giao
+                                {% elif order.get('status') == 'cancelled' %}
+                                    <i class="bi bi-x-circle"></i> Đã hủy
+                                {% else %}
+                                    {{ order.get('status', 'N/A') }}
+                                {% endif %}
+                            </span>
+                        </td>
+                        <td>{{ order.get('created_at').strftime('%d/%m/%Y') if order.get('created_at') else '' }}</td>
+                        <td>
+                            <a href="{{ url_for('customer.order_detail', order_id=order.get('_id')) }}" class="btn btn-sm btn-info">Chi tiết</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p class="text-muted">Bạn chưa có đơn hàng nào. <a href="{{ url_for('customer.restaurants') }}">Đặt món ngay!</a></p>
+    {% endif %}
+</div>
+{% endblock %}
+

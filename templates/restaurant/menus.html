@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}Quản lý Món ăn{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Quản lý Món ăn</h2>
+        <a href="{{ url_for('restaurant.add_menu') }}" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Thêm món ăn
+        </a>
+    </div>
+    
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th>Hình ảnh</th>
+                            <th>Tên món</th>
+                            <th>Giá</th>
+                            <th>Danh mục</th>
+                            <th>Trạng thái</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if menus %}
+                            {% for menu in menus %}
+                            <tr>
+                                <td>
+                                    {% if menu.get('image_url') %}
+                                        <img src="{{ menu.image_url }}" 
+                                             alt="{{ menu.get('name', 'N/A') }}" 
+                                             class="img-thumbnail" 
+                                             style="width: 80px; height: 80px; object-fit: cover;">
+                                    {% else %}
+                                        <img src="{{ url_for('static', filename='img/pizza.webp') }}" 
+                                             alt="No image" 
+                                             class="img-thumbnail" 
+                                             style="width: 80px; height: 80px; object-fit: cover; opacity: 0.5;">
+                                    {% endif %}
+                                </td>
+                                <td><strong>{{ menu.get('name', 'N/A') }}</strong></td>
+                                <td>{{ "{:,.0f}".format(menu.get('price', 0)) }} đ</td>
+                                <td>{{ menu.get('cat', 'N/A') }}</td>
+                                <td>
+                                    <span class="badge bg-{{ 'success' if menu.get('status') == 'available' else 'secondary' }}">
+                                        {{ 'Có sẵn' if menu.get('status') == 'available' else 'Hết hàng' }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('restaurant.edit_menu', menu_id=menu._id) }}" class="btn btn-sm btn-warning">
+                                        <i class="bi bi-pencil"></i> Sửa
+                                    </a>
+                                    <form method="POST" action="{{ url_for('restaurant.delete_menu', menu_id=menu._id) }}" class="d-inline" 
+                                          onsubmit="return confirm('Bạn có chắc chắn muốn xóa món ăn này?')">
+                                        <button type="submit" class="btn btn-sm btn-danger">
+                                            <i class="bi bi-trash"></i> Xóa
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="6" class="text-center text-muted">Chưa có món ăn nào. <a href="{{ url_for('restaurant.add_menu') }}">Thêm món ăn ngay!</a></td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <div class="mt-3">
+        <a href="{{ url_for('restaurant.dashboard') }}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Quay lại Dashboard
+        </a>
+    </div>
+</div>
+{% endblock %}
+

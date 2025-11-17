@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block title %}Shipper Dashboard - FastFood{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Xin chào, {{ user.get('name', 'Shipper') }}!</h2>
+        <button id="toggleOnline" class="btn btn-{{ 'success' if user.get('is_online') else 'secondary' }}">
+            <i class="bi bi-circle-fill"></i> {{ 'Online' if user.get('is_online') else 'Offline' }}
+        </button>
+    </div>
+
+    <!-- Statistics -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Tổng đơn</h5>
+                    <h3 class="text-primary">{{ stats.total_orders or 0 }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Hoàn thành</h5>
+                    <h3 class="text-success">{{ stats.completed_orders or 0 }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Đánh giá</h5>
+                    <h3 class="text-warning">{{ stats.avg_rating or 0 }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-center border-success">
+                <div class="card-body">
+                    <h5 class="card-title">Tiền ship</h5>
+                    <h3 class="text-success">{{ "{:,.0f}".format(stats.get('delivery_earnings', 0)) }} đ</h3>
+                    <small class="text-muted">Sau khi khách xác nhận nhận hàng</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Available Orders -->
+    <h3 class="mb-3">Đơn hàng có sẵn</h3>
+    {% if available_orders %}
+        <div class="row">
+            {% for order in available_orders %}
+            <div class="col-md-6 mb-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Đơn #{{ order._id|string|truncate(8, True, '') }}</h5>
+                        <p class="card-text">Tổng tiền: {{ "{:,.0f}".format(order.get('total', 0)) }} đ</p>
+                        <form method="POST" action="{{ url_for('shipper.accept_order', order_id=order._id) }}">
+                            <button type="submit" class="btn btn-primary">Nhận đơn</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="text-muted">Không có đơn hàng nào</p>
+    {% endif %}
+
+    <!-- My Orders -->
+    <h3 class="mb-3 mt-4">Đơn hàng của tôi</h3>
+    {% if my_orders %}
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Mã đơn</th>
+                        <th>Tổng tiền</th>
+                        <th>Trạng thái</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in my_orders %}
+                    <tr>
+                        <td>#{{ order._id|string|truncate(8, True, '') }}</td>
+                        <td>{{ "{:,.0f}".format(order.get('total', 0)) }} đ</td>
+                        <td>
+                            <span class="badge bg-{{ 'warning' if order.get('status') == 'pending' else 'info' if order.get('status') == 'preparing' else 'primary' if order.get('status') == 'delivering' else 'success' if order.get('status') == 'delivered' else 'danger' }}">{{ order.get('status', 'N/A') }}</span>
+                        </td>
+                        <td>
+                            <a href="{{ url_for('shipper.order_detail', order_id=order._id) }}" class="btn btn-sm btn-info">Chi tiết</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p class="text-muted">Bạn chưa có đơn hàng nào</p>
+    {% endif %}
+</div>
+
+<script>
+document.getElementById('toggleOnline').addEventListener('click', function() {
+    fetch('/shipper/toggle-online', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        }
+    });
+});
+</script>
+{% endblock %}
+

@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block title %}Đánh giá của tôi - Shipper{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-star"></i> Đánh giá của tôi</h2>
+        <a href="{{ url_for('shipper.dashboard') }}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Quay lại Dashboard
+        </a>
+    </div>
+    
+    <!-- Thống kê tổng quan -->
+    {% if reviews %}
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Tổng đánh giá</h5>
+                    <h3 class="text-primary">{{ stats.total_reviews }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Đánh giá trung bình</h5>
+                    <h3 class="text-warning">
+                        {{ stats.avg_rating }}/5
+                    </h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Đánh giá 0 sao</h5>
+                    <h3 class="text-danger">
+                        {{ stats.zero_star_count }}
+                    </h3>
+                    {% if stats.zero_star_count >= 5 %}
+                    <small class="text-danger">⚠️ Cảnh báo: Bạn đã có {{ stats.zero_star_count }} đánh giá 0 sao</small>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Danh sách đánh giá -->
+    {% if reviews %}
+        {% for review in reviews %}
+        <div class="card mb-3">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div>
+                        <h6 class="mb-1">
+                            <i class="bi bi-person"></i> Khách hàng: <strong>{{ review.customer.get('name', 'N/A') if review.customer else 'N/A' }}</strong>
+                        </h6>
+                        <small class="text-muted">
+                            <i class="bi bi-shop"></i> {{ review.restaurant.get('name', 'N/A') if review.restaurant else 'N/A' }}
+                            <span class="ms-2">
+                                <i class="bi bi-calendar"></i> {{ review.get('created_at').strftime('%d/%m/%Y %H:%M') if review.get('created_at') else 'N/A' }}
+                            </span>
+                        </small>
+                    </div>
+                    <div>
+                        {% for i in range(5) %}
+                            <i class="bi bi-star{{ '-fill' if i < review.get('driver_rating', 0) else '' }} text-warning"></i>
+                        {% endfor %}
+                        {% if review.get('driver_rating') == 0 %}
+                            <span class="text-danger ms-1">0 sao</span>
+                        {% else %}
+                            <span class="ms-1">{{ review.get('driver_rating', 0) }}/5</span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                {% if review.get('driver_comment') %}
+                    <p class="mb-2">{{ review.get('driver_comment') }}</p>
+                {% endif %}
+                
+                {% if review.get('order') %}
+                <div class="mt-2">
+                    <a href="{{ url_for('shipper.order_detail', order_id=review.order._id) }}" class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-eye"></i> Xem đơn hàng
+                    </a>
+                </div>
+                {% endif %}
+                
+                {% if review.get('images') %}
+                <div class="mt-3">
+                    <h6 class="small"><i class="bi bi-images"></i> Hình ảnh khách hàng đã gửi</h6>
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for image_url in review.get('images', []) %}
+                            <img src="{{ image_url }}" alt="Review image" class="img-thumbnail" style="max-width: 150px; max-height: 150px; object-fit: cover;">
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="alert alert-info text-center">
+            <i class="bi bi-info-circle"></i> Bạn chưa có đánh giá nào từ khách hàng
+            <p class="mb-0 mt-2 text-muted">Hãy hoàn thành nhiều đơn hàng để nhận được đánh giá từ khách hàng!</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+

@@ -1,0 +1,353 @@
+{% extends "base.html" %}
+
+{% block title %}Chi tiết đơn hàng - FastFood{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h2 class="mb-4">Chi tiết đơn hàng</h2>
+    
+    {% if order %}
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Thông tin đơn hàng</h5>
+                    <p><strong>Mã đơn:</strong> #{{ order.get('_id')|string|truncate(8, True, '') }}</p>
+                    <p><strong>Ngày đặt:</strong> {{ order.get('created_at').strftime('%d/%m/%Y %H:%M') if order.get('created_at') else 'N/A' }}</p>
+                    <p><strong>Trạng thái:</strong> 
+                        <span class="badge bg-{{ 'success' if order.get('status') == 'completed' else 'info' if order.get('status') == 'delivered' else 'warning' if order.get('status') == 'preparing' else 'info' if order.get('status') == 'pending' else 'primary' if order.get('status') == 'delivering' else 'danger' }}">
+                            {% if order.get('status') == 'completed' %}
+                                <i class="bi bi-check-circle-fill"></i> Đã hoàn thành
+                            {% elif order.get('status') == 'delivered' %}
+                                <i class="bi bi-check-circle"></i> Đã giao - Chờ xác nhận
+                            {% elif order.get('status') == 'preparing' %}
+                                <i class="bi bi-clock"></i> Đang chuẩn bị
+                            {% elif order.get('status') == 'pending' %}
+                                <i class="bi bi-hourglass-split"></i> Chờ xác nhận
+                            {% elif order.get('status') == 'delivering' %}
+                                <i class="bi bi-truck"></i> Đang giao hàng
+                            {% elif order.get('status') == 'cancelled' %}
+                                <i class="bi bi-x-circle"></i> Đã hủy
+                            {% else %}
+                                {{ order.get('status', 'N/A') }}
+                            {% endif %}
+                        </span>
+                    </p>
+                    {% if order.get('status') == 'delivering' %}
+                        <div class="alert alert-primary mt-2">
+                            <i class="bi bi-truck"></i> <strong>Tài xế đang trên đường đến bạn!</strong>
+                            <p class="mb-0 mt-1">Vui lòng chuẩn bị nhận hàng. Đơn hàng sẽ được giao trong thời gian sớm nhất.</p>
+                        </div>
+                    {% elif order.get('status') == 'delivered' %}
+                        <div class="alert alert-warning mt-2">
+                            <i class="bi bi-exclamation-triangle"></i> <strong>Đơn hàng đã được giao đến bạn!</strong>
+                            <p class="mb-0 mt-1">Vui lòng xác nhận đã nhận hàng để hoàn tất đơn hàng và có thể đánh giá.</p>
+                            <form method="POST" action="{{ url_for('customer.confirm_received', order_id=order._id) }}" class="mt-2">
+                                <button type="submit" class="btn btn-success btn-sm">
+                                    <i class="bi bi-check-circle"></i> Xác nhận đã nhận hàng
+                                </button>
+                            </form>
+                        </div>
+                    {% elif order.get('status') == 'preparing' %}
+                        <div class="alert alert-info mt-2">
+                            <i class="bi bi-clock"></i> <strong>Nhà hàng đang chuẩn bị món ăn của bạn</strong>
+                            <p class="mb-0 mt-1">Đơn hàng đang được chuẩn bị. Bạn sẽ được thông báo khi tài xế nhận đơn.</p>
+                        </div>
+                    {% elif order.get('status') == 'pending' %}
+                        <div class="alert alert-warning mt-2">
+                            <i class="bi bi-hourglass-split"></i> <strong>Đơn hàng đang chờ xác nhận</strong>
+                            <p class="mb-0 mt-1">Đơn hàng của bạn đang chờ nhà hàng xác nhận.</p>
+                        </div>
+                    {% elif order.get('status') == 'completed' %}
+                        <div class="alert alert-success mt-2">
+                            <i class="bi bi-check-circle-fill"></i> <strong>Đơn hàng đã hoàn thành!</strong>
+                            <p class="mb-0 mt-1">Cảm ơn bạn đã sử dụng dịch vụ. Bạn có thể đánh giá đơn hàng bên dưới.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Nhà hàng</h5>
+                    {% if restaurant %}
+                    <p><strong>{{ restaurant.name }}</strong></p>
+                    <p class="text-muted">{{ restaurant.addr }}</p>
+                    {% else %}
+                    <p class="text-muted">Không tìm thấy thông tin nhà hàng</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Danh sách món</h5>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Món</th>
+                                <th>Số lượng</th>
+                                <th>Giá</th>
+                                <th>Tổng</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% set order_items = order.get('items', []) %}
+                            {% if order_items %}
+                                {% for item in order_items %}
+                                    {% if item is string %}
+                                        {# Old format: items is array of strings #}
+                                        <tr>
+                                            <td>{{ item }}</td>
+                                            <td>1</td>
+                                            <td>-</td>
+                                            <td>-</td>
+                                        </tr>
+                                    {% else %}
+                                        {# New format: items is array of objects #}
+                                        <tr>
+                                            <td>{{ item.get('name', 'N/A') }}</td>
+                                            <td>{{ item.get('quantity', 1) }}</td>
+                                            <td>{{ "{:,.0f}".format(item.get('price', 0)) }} đ</td>
+                                            <td>{{ "{:,.0f}".format(item.get('price', 0) * item.get('quantity', 1)) }} đ</td>
+                                        </tr>
+                                    {% endif %}
+                                {% endfor %}
+                            {% else %}
+                                <tr><td colspan="4" class="text-muted">Không có món nào</td></tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Tổng tiền</h5>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Tạm tính:</span>
+                        <span>{{ "{:,.0f}".format(order.get('total', 0) - (order.get('delivery_fee') or 15000)) }} đ</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Phí giao hàng:</span>
+                        <span>{{ "{:,.0f}".format(order.get('delivery_fee') or 15000) }} đ</span>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between">
+                        <strong>Tổng cộng:</strong>
+                        <strong class="text-primary">{{ "{:,.0f}".format(order.get('total', 0)) }} đ</strong>
+                    </div>
+                </div>
+            </div>
+            
+            {% if payment %}
+            <div class="card mt-3">
+                <div class="card-body">
+                    <h5 class="card-title">Thanh toán</h5>
+                    <p><strong>Phương thức:</strong> {{ payment.get('method', 'N/A') }}</p>
+                    <p><strong>Trạng thái:</strong> 
+                        <span class="badge bg-{{ 'success' if payment.get('status') == 'success' else 'warning' }}">
+                            {{ payment.get('status', 'N/A') }}
+                        </span>
+                    </p>
+                    {% if payment.get('paid_at') %}
+                    <p><strong>Ngày thanh toán:</strong> {{ payment.get('paid_at').strftime('%d/%m/%Y %H:%M') if payment.get('paid_at') else 'N/A' }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+            
+            <div class="mt-3">
+                <a href="{{ url_for('customer.orders') }}" class="btn btn-secondary w-100">Quay lại</a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Review Section - Chỉ hiển thị khi đơn hàng đã completed (khách đã xác nhận nhận hàng) -->
+    {% if order.get('status') == 'completed' %}
+    <div class="row mt-4">
+        <div class="col-12">
+            {% if review %}
+                <!-- Hiển thị đánh giá đã có -->
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0"><i class="bi bi-check-circle"></i> Bạn đã đánh giá đơn hàng này</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <h6><i class="bi bi-shop"></i> Đánh giá Nhà hàng</h6>
+                                <div class="mb-2">
+                                    {% for i in range(5) %}
+                                        <i class="bi bi-star{{ '-fill' if i < review.get('restaurant_rating', 0) else '' }} text-warning"></i>
+                                    {% endfor %}
+                                    <span class="ms-2">{{ review.get('restaurant_rating', 0) }}/5</span>
+                                </div>
+                                {% if review.get('restaurant_comment') %}
+                                    <p class="mb-2">{{ review.get('restaurant_comment') }}</p>
+                                {% endif %}
+                            </div>
+                            {% if shipper %}
+                            <div class="col-md-6 mb-3">
+                                <h6><i class="bi bi-truck"></i> Đánh giá Tài xế</h6>
+                                <div class="mb-2">
+                                    {% for i in range(5) %}
+                                        <i class="bi bi-star{{ '-fill' if i < review.get('driver_rating', 0) else '' }} text-warning"></i>
+                                    {% endfor %}
+                                    {% if review.get('driver_rating') == 0 %}
+                                        <span class="ms-2 text-danger">0 sao</span>
+                                    {% else %}
+                                        <span class="ms-2">{{ review.get('driver_rating', 0) }}/5</span>
+                                    {% endif %}
+                                </div>
+                                {% if review.get('driver_comment') %}
+                                    <p class="mb-2">{{ review.get('driver_comment') }}</p>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        {% if review.get('menu_ratings') %}
+                        <div class="mt-3">
+                            <h6><i class="bi bi-egg-fried"></i> Đánh giá Món ăn</h6>
+                            {% for menu_rating in review.get('menu_ratings', []) %}
+                            <div class="mb-2 p-2 bg-light rounded">
+                                <strong>{{ menu_rating.get('menu_name', 'N/A') }}</strong>
+                                <div class="mb-1">
+                                    {% for i in range(5) %}
+                                        <i class="bi bi-star{{ '-fill' if i < menu_rating.get('rating', 0) else '' }} text-warning"></i>
+                                    {% endfor %}
+                                    <span class="ms-2">{{ menu_rating.get('rating', 0) }}/5</span>
+                                </div>
+                                {% if menu_rating.get('comment') %}
+                                    <p class="mb-0 small">{{ menu_rating.get('comment') }}</p>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        
+                        {% if review.get('images') %}
+                        <div class="mt-3">
+                            <h6><i class="bi bi-images"></i> Hình ảnh</h6>
+                            <div class="d-flex flex-wrap gap-2">
+                                {% for image_url in review.get('images', []) %}
+                                    <img src="{{ image_url }}" alt="Review image" class="img-thumbnail" style="max-width: 150px; max-height: 150px; object-fit: cover;">
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            {% else %}
+                <!-- Form đánh giá -->
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="bi bi-star"></i> Đánh giá đơn hàng</h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="POST" action="{{ url_for('customer.create_review', order_id=order._id) }}" enctype="multipart/form-data">
+                            <div class="row">
+                                <!-- Đánh giá Nhà hàng -->
+                                <div class="col-md-6 mb-4">
+                                    <h6><i class="bi bi-shop"></i> Đánh giá Nhà hàng <span class="text-danger">*</span></h6>
+                                    <div class="mb-3">
+                                        <label class="form-label">Số sao</label>
+                                        <div class="d-flex gap-2 flex-wrap">
+                                            {% for i in range(1, 6) %}
+                                            <label class="form-check-label" style="cursor: pointer;">
+                                                <input type="radio" name="restaurant_rating" value="{{ i }}" class="form-check-input" required>
+                                                <i class="bi bi-star-fill text-warning" style="font-size: 1.5rem;"></i>
+                                            </label>
+                                            {% endfor %}
+                                        </div>
+                                        <small class="text-muted">Chọn từ 1 đến 5 sao</small>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="restaurant_comment" class="form-label">Nhận xét</label>
+                                        <textarea class="form-control" id="restaurant_comment" name="restaurant_comment" rows="3" placeholder="Chia sẻ trải nghiệm của bạn về nhà hàng..."></textarea>
+                                    </div>
+                                </div>
+                                
+                                <!-- Đánh giá Shipper -->
+                                {% if shipper %}
+                                <div class="col-md-6 mb-4">
+                                    <h6><i class="bi bi-truck"></i> Đánh giá Tài xế <span class="text-danger">*</span></h6>
+                                    <p class="text-muted small mb-2">Tài xế: <strong>{{ shipper.get('name', 'N/A') }}</strong></p>
+                                    <div class="mb-3">
+                                        <label class="form-label">Số sao</label>
+                                        <div class="d-flex gap-2 flex-wrap">
+                                            {% for i in range(1, 6) %}
+                                            <label class="form-check-label" style="cursor: pointer;">
+                                                <input type="radio" name="driver_rating" value="{{ i }}" class="form-check-input" required>
+                                                <i class="bi bi-star-fill text-warning" style="font-size: 1.5rem;"></i>
+                                            </label>
+                                            {% endfor %}
+                                        </div>
+                                        <small class="text-muted">Chọn từ 1 đến 5 sao</small>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="driver_comment" class="form-label">Nhận xét</label>
+                                        <textarea class="form-control" id="driver_comment" name="driver_comment" rows="3" placeholder="Chia sẻ trải nghiệm của bạn về tài xế..."></textarea>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Đánh giá Món ăn -->
+                            {% if menu_items %}
+                            <div class="mb-4">
+                                <h6><i class="bi bi-egg-fried"></i> Đánh giá Món ăn</h6>
+                                {% for item in menu_items %}
+                                <div class="card mb-3">
+                                    <div class="card-body">
+                                        <h6 class="mb-2">{{ item.menu.get('name', 'N/A') }}</h6>
+                                        <div class="mb-2">
+                                            <label class="form-label small">Số sao (tùy chọn)</label>
+                                            <div class="d-flex gap-2">
+                                                {% for i in range(1, 6) %}
+                                                <label class="form-check-label" style="cursor: pointer;">
+                                                    <input type="radio" name="menu_rating_{{ item.menu._id }}" value="{{ i }}" class="form-check-input">
+                                                    <i class="bi bi-star-fill text-warning"></i>
+                                                </label>
+                                                {% endfor %}
+                                            </div>
+                                            <small class="text-muted">Chọn từ 1 đến 5 sao (không bắt buộc)</small>
+                                        </div>
+                                        <div>
+                                            <label for="menu_comment_{{ item.menu._id }}" class="form-label small">Nhận xét (tùy chọn)</label>
+                                            <textarea class="form-control form-control-sm" id="menu_comment_{{ item.menu._id }}" name="menu_comment_{{ item.menu._id }}" rows="2" placeholder="Nhận xét về món này..."></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            
+                            <!-- Upload hình ảnh -->
+                            <div class="mb-3">
+                                <label for="review_images" class="form-label"><i class="bi bi-images"></i> Hình ảnh (nếu có)</label>
+                                <input type="file" class="form-control" id="review_images" name="review_images" accept="image/*" multiple>
+                                <small class="form-text text-muted">Có thể chọn nhiều hình ảnh</small>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-send"></i> Gửi đánh giá
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+    {% else %}
+    <div class="alert alert-danger">
+        Không tìm thấy đơn hàng
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+

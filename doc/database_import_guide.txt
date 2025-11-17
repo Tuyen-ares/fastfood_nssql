@@ -1,0 +1,127 @@
+===========================================
+HƯỚNG DẪN IMPORT DỮ LIỆU VÀO MONGODB
+Sử dụng 3T Studio (Studio 3T) hoặc MongoDB Compass
+===========================================
+
+THỨ TỰ IMPORT (QUAN TRỌNG - PHẢI THEO ĐÚNG THỨ TỰ):
+1. users.json          -> Collection: users
+2. restaurants.json    -> Collection: restaurants
+3. menus.json          -> Collection: menus
+4. orders.json         -> Collection: orders
+5. payments.json       -> Collection: payments
+6. reviews.json        -> Collection: reviews
+
+===========================================
+CÁCH IMPORT TRONG 3T STUDIO:
+===========================================
+
+BƯỚC 1: Import users.json
+1. Mở 3T Studio
+2. Kết nối đến MongoDB database "fastfood"
+3. Click chuột phải vào database "fastfood"
+4. Chọn "Import Collections..."
+5. Chọn file: users.json
+6. Format: JSON
+7. Click "Import"
+8. Sau khi import xong, ghi lại ObjectId của:
+   - Admin (role: "admin")
+   - Shipper (role: "shipper")
+   - Restaurant Owner (role: "restaurant_owner")
+   - Customer 1 (phone: "0901000001")
+   - Customer 2 (phone: "0901000002")
+   - Customer 3 (phone: "0901000003")
+
+BƯỚC 2: Import restaurants.json
+1. Mở file restaurants.json
+2. Thay thế tất cả "OWNER1_ID" bằng ObjectId thật của Restaurant Owner (từ BƯỚC 1)
+3. Import vào collection: restaurants
+4. Sau khi import xong, ghi lại ObjectId của tất cả 10 nhà hàng
+
+BƯỚC 3: Import menus.json
+1. Mở file menus.json
+2. Thay thế:
+   - "REST_ID_0" -> ObjectId của nhà hàng thứ 1 (Burger King Lê Lợi)
+   - "REST_ID_1" -> ObjectId của nhà hàng thứ 2 (KFC Nguyễn Huệ)
+   - "REST_ID_2" -> ObjectId của nhà hàng thứ 3 (Lotteria Bến Thành)
+   - ... (xem file menus.json để biết mapping)
+3. Import vào collection: menus
+4. Sau khi import xong, ghi lại ObjectId của các món ăn (nếu cần cho reviews)
+
+BƯỚC 4: Import orders.json
+1. Mở file orders.json
+2. Thay thế:
+   - "CUST1_ID" -> ObjectId của Customer 1
+   - "CUST2_ID" -> ObjectId của Customer 2
+   - "CUST3_ID" -> ObjectId của Customer 3
+   - "SHIPPER_ID" -> ObjectId của Shipper
+   - "REST_ID_0" đến "REST_ID_9" -> ObjectId của các nhà hàng (từ BƯỚC 2)
+3. Import vào collection: orders
+4. Sau khi import xong, ghi lại ObjectId của tất cả 10 đơn hàng
+
+BƯỚC 5: Import payments.json
+1. Mở file payments.json
+2. Thay thế:
+   - "ORDER_ID_0" đến "ORDER_ID_9" -> ObjectId của các đơn hàng (từ BƯỚC 4)
+3. Import vào collection: payments
+
+BƯỚC 6: Import reviews.json
+1. Mở file reviews.json
+2. Thay thế:
+   - "ORDER_ID_X" -> ObjectId của đơn hàng tương ứng
+   - "USER_ID_X" -> ObjectId của customer tương ứng
+   - "REST_ID_X" -> ObjectId của nhà hàng tương ứng
+   - "SHIPPER_ID" -> ObjectId của Shipper
+   - "MENU_ID_X" -> ObjectId của món ăn tương ứng
+3. Import vào collection: reviews
+
+===========================================
+TẠO INDEXES SAU KHI IMPORT:
+===========================================
+
+Sau khi import xong tất cả, chạy các lệnh sau trong MongoDB Shell:
+
+// Index cho users
+db.users.createIndex({ phone: 1 }, { unique: true })
+db.users.createIndex({ role: 1 })
+db.users.createIndex({ status: 1 })
+
+// Index cho restaurants
+db.restaurants.createIndex({ loc: "2dsphere" })
+db.restaurants.createIndex({ owner_id: 1 })
+db.restaurants.createIndex({ status: 1 })
+db.restaurants.createIndex({ name: 1 })
+
+// Index cho menus
+db.menus.createIndex({ rest_id: 1 })
+db.menus.createIndex({ status: 1 })
+
+// Index cho orders
+db.orders.createIndex({ user_id: 1 })
+db.orders.createIndex({ rest_id: 1 })
+db.orders.createIndex({ shipper_id: 1 })
+db.orders.createIndex({ status: 1 })
+db.orders.createIndex({ created_at: 1 })
+
+// Index cho payments
+db.payments.createIndex({ order_id: 1 }, { unique: true })
+db.payments.createIndex({ status: 1 })
+
+// Index cho reviews
+db.reviews.createIndex({ order_id: 1 }, { unique: true })
+db.reviews.createIndex({ restaurant_id: 1 })
+db.reviews.createIndex({ shipper_id: 1 })
+db.reviews.createIndex({ user_id: 1 })
+db.reviews.createIndex({ created_at: -1 })
+db.reviews.createIndex({ "menu_ratings.menu_id": 1 })
+
+===========================================
+LƯU Ý:
+===========================================
+- Phải import theo đúng thứ tự vì các collection có quan hệ với nhau
+- ObjectId sẽ được MongoDB tự động tạo khi import
+- Cần thay thế các placeholder (OWNER1_ID, REST_ID_X, v.v.) bằng ObjectId thật
+- Có thể dùng MongoDB Compass hoặc Studio 3T để import
+- Format file: JSON Array (Extended JSON của MongoDB)
+
+===========================================
+

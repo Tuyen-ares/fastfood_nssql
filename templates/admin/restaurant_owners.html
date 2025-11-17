@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}Quản lý Chủ Nhà hàng - Admin{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h2 class="mb-4">Quản lý Chủ Nhà hàng</h2>
+    
+    <div class="card">
+        <div class="card-body">
+            {% if owners_data %}
+                {% for item in owners_data %}
+                <div class="card mb-3">
+                    <div class="card-header bg-primary text-white">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5 class="mb-0">
+                                    <i class="bi bi-person-badge"></i> {{ item.owner.get('name', 'N/A') }}
+                                </h5>
+                                <small>Số điện thoại: {{ item.owner.get('phone', 'N/A') }}</small>
+                            </div>
+                            <div>
+                                <span class="badge bg-light text-dark">
+                                    {{ item.restaurant_count }} nhà hàng
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        {% if item.restaurants %}
+                            <div class="table-responsive">
+                                <table class="table table-sm table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Tên nhà hàng</th>
+                                            <th>Địa chỉ</th>
+                                            <th>Trạng thái</th>
+                                            <th>Đánh giá</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for restaurant in item.restaurants %}
+                                        <tr>
+                                            <td><strong>{{ restaurant.get('name', 'N/A') }}</strong></td>
+                                            <td>{{ restaurant.get('addr', 'N/A') }}</td>
+                                            <td>
+                                                <span class="badge bg-{{ 'success' if restaurant.get('status') == 'approved' else 'warning' if restaurant.get('status') == 'pending' else 'danger' }}">
+                                                    {{ restaurant.get('status', 'N/A') }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-warning text-dark">
+                                                    <i class="bi bi-star-fill"></i> {{ restaurant.get('rating', 0) }}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <p class="text-muted mb-0">Chưa có nhà hàng nào</p>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle"></i> Chưa có chủ nhà hàng nào trong hệ thống
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="mt-3">
+        <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Quay lại Dashboard
+        </a>
+    </div>
+</div>
+{% endblock %}
+

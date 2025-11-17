@@ -1,0 +1,73 @@
+[
+  {
+    "order_id": "ORDER_ID_0",
+    "method": "momo",
+    "amount": 129000,
+    "status": "success",
+    "paid_at": { "$date": "2024-01-01T08:00:00.000Z" }
+  },
+  {
+    "order_id": "ORDER_ID_1",
+    "method": "cash",
+    "amount": 80000,
+    "status": "success",
+    "paid_at": { "$date": "2024-01-01T09:00:00.000Z" }
+  },
+  {
+    "order_id": "ORDER_ID_2",
+    "method": "banking",
+    "amount": 60000,
+    "status": "success",
+    "paid_at": { "$date": "2024-01-01T10:00:00.000Z" }
+  },
+  {
+    "order_id": "ORDER_ID_3",
+    "method": "momo",
+    "amount": 90000,
+    "status": "success",
+    "paid_at": { "$date": "2024-01-01T11:00:00.000Z" }
+  },
+  {
+    "order_id": "ORDER_ID_4",
+    "method": "zalo_pay",
+    "amount": 214000,
+    "status": "success",
+    "paid_at": { "$date": "2024-01-01T12:00:00.000Z" }
+  },
+  {
+    "order_id": "ORDER_ID_5",
+    "method": "momo",
+    "amount": 60000,
+    "status": "pending",
+    "paid_at": null
+  },
+  {
+    "order_id": "ORDER_ID_6",
+    "method": "cash",
+    "amount": 50000,
+    "status": "success",
+    "paid_at": { "$date": "2024-01-01T14:00:00.000Z" }
+  },
+  {
+    "order_id": "ORDER_ID_7",
+    "method": "banking",
+    "amount": 70000,
+    "status": "pending",
+    "paid_at": null
+  },
+  {
+    "order_id": "ORDER_ID_8",
+    "method": "momo",
+    "amount": 265000,
+    "status": "pending",
+    "paid_at": null
+  },
+  {
+    "order_id": "ORDER_ID_9",
+    "method": "cash",
+    "amount": 144000,
+    "status": "success",
+    "paid_at": { "$date": "2024-01-01T15:50:00.000Z" }
+  }
+]
+

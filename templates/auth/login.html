@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}Đăng nhập - FastFood{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-4">
+            <div class="card shadow">
+                <div class="card-body p-5">
+                    <h2 class="card-title text-center mb-4">Đăng nhập</h2>
+                    <form method="POST" action="{{ url_for('auth.login') }}">
+                        <div class="mb-3">
+                            <label for="phone" class="form-label">Số điện thoại</label>
+                            <input type="text" class="form-control" id="phone" name="phone" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Mật khẩu</label>
+                            <input type="password" class="form-control" id="password" name="password" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 mb-3">Đăng nhập</button>
+                    </form>
+                    <div class="text-center">
+                        <p>Chưa có tài khoản? <a href="{{ url_for('auth.register') }}">Đăng ký ngay</a></p>
+                    </div>
+                    <hr>
+                    <div class="text-center small text-muted">
+                        <p>Tài khoản demo:</p>
+                        <p>Admin: 0999999999 / admin123</p>
+                        <p>Customer: 0901000001 / nam123</p>
+                        <p>Shipper: 0888888888 / ship123</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

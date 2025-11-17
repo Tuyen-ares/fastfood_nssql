@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}Đăng ký - FastFood{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow">
+                <div class="card-body p-5">
+                    <h2 class="card-title text-center mb-4">Đăng ký tài khoản</h2>
+                    <form method="POST" action="{{ url_for('auth.register') }}">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Họ tên</label>
+                            <input type="text" class="form-control" id="name" name="name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="phone" class="form-label">Số điện thoại</label>
+                            <input type="text" class="form-control" id="phone" name="phone" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Mật khẩu</label>
+                            <input type="password" class="form-control" id="password" name="password" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="confirm_password" class="form-label">Xác nhận mật khẩu</label>
+                            <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="role" class="form-label">Loại tài khoản <span class="text-danger">*</span></label>
+                            <select class="form-select" id="role" name="role" required>
+                                <option value="customer" selected>Khách hàng</option>
+                                <option value="restaurant_owner">Chủ nhà hàng</option>
+                            </select>
+                            <small class="form-text text-muted">
+                                <i class="bi bi-info-circle"></i> Chỉ có thể đăng ký với vai trò Khách hàng hoặc Chủ nhà hàng
+                            </small>
+                        </div>
+                        <div id="restaurant_owner_info" style="display: none;" class="alert alert-info">
+                            <i class="bi bi-info-circle"></i> <strong>Lưu ý:</strong> Sau khi đăng ký, bạn cần đăng ký nhà hàng và chờ admin duyệt để bắt đầu sử dụng hệ thống.
+                        </div>
+                        <div id="shipper_fields" style="display: none;">
+                            <div class="mb-3">
+                                <label for="vehicle" class="form-label">Loại xe</label>
+                                <input type="text" class="form-control" id="vehicle" name="vehicle" placeholder="VD: Wave, SH">
+                            </div>
+                            <div class="mb-3">
+                                <label for="plate" class="form-label">Biển số</label>
+                                <input type="text" class="form-control" id="plate" name="plate">
+                            </div>
+                            <div class="mb-3">
+                                <label for="cccd" class="form-label">CCCD/CMND</label>
+                                <input type="text" class="form-control" id="cccd" name="cccd">
+                            </div>
+                            <div class="mb-3">
+                                <label for="license" class="form-label">Bằng lái</label>
+                                <input type="text" class="form-control" id="license" name="license">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 mb-3">Đăng ký</button>
+                    </form>
+                    <div class="text-center">
+                        <p>Đã có tài khoản? <a href="{{ url_for('auth.login') }}">Đăng nhập</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('role').addEventListener('change', function() {
+    const shipperFields = document.getElementById('shipper_fields');
+    const restaurantOwnerInfo = document.getElementById('restaurant_owner_info');
+    
+    // Ẩn tất cả fields
+    shipperFields.style.display = 'none';
+    restaurantOwnerInfo.style.display = 'none';
+    
+    // Hiển thị thông tin phù hợp
+    if (this.value === 'restaurant_owner') {
+        restaurantOwnerInfo.style.display = 'block';
+    }
+    // Không cần hiển thị fields cho shipper vì đã bỏ option này
+});
+</script>
+{% endblock %}
+

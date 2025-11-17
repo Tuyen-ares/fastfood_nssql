@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block title %}Đánh giá của tôi{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-star"></i> Đánh giá của tôi</h2>
+        <a href="{{ url_for('customer.dashboard') }}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Quay lại Dashboard
+        </a>
+    </div>
+    
+    {% if reviews %}
+        {% for review in reviews %}
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-0">
+                            <i class="bi bi-shop"></i> {{ review.restaurant.get('name', 'N/A') if review.restaurant else 'N/A' }}
+                        </h6>
+                        <small>
+                            <i class="bi bi-calendar"></i> {{ review.get('created_at').strftime('%d/%m/%Y %H:%M') if review.get('created_at') else 'N/A' }}
+                        </small>
+                    </div>
+                    {% if review.get('order') %}
+                    <a href="{{ url_for('customer.order_detail', order_id=review.order._id) }}" class="btn btn-sm btn-light">
+                        <i class="bi bi-eye"></i> Xem đơn hàng
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <!-- Đánh giá Nhà hàng -->
+                    <div class="col-md-6 mb-3">
+                        <h6><i class="bi bi-shop"></i> Đánh giá Nhà hàng</h6>
+                        <div class="mb-2">
+                            {% for i in range(5) %}
+                                <i class="bi bi-star{{ '-fill' if i < review.get('restaurant_rating', 0) else '' }} text-warning"></i>
+                            {% endfor %}
+                            {% if review.get('restaurant_rating') == 0 %}
+                                <span class="ms-2 text-danger">0 sao</span>
+                            {% else %}
+                                <span class="ms-2">{{ review.get('restaurant_rating', 0) }}/5</span>
+                            {% endif %}
+                        </div>
+                        {% if review.get('restaurant_comment') %}
+                            <p class="mb-0">{{ review.get('restaurant_comment') }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Đánh giá Shipper -->
+                    {% if review.get('shipper') %}
+                    <div class="col-md-6 mb-3">
+                        <h6><i class="bi bi-truck"></i> Đánh giá Tài xế</h6>
+                        <p class="text-muted small mb-1">Tài xế: <strong>{{ review.shipper.get('name', 'N/A') }}</strong></p>
+                        <div class="mb-2">
+                            {% for i in range(5) %}
+                                <i class="bi bi-star{{ '-fill' if i < review.get('driver_rating', 0) else '' }} text-warning"></i>
+                            {% endfor %}
+                            {% if review.get('driver_rating') == 0 %}
+                                <span class="ms-2 text-danger">0 sao</span>
+                            {% else %}
+                                <span class="ms-2">{{ review.get('driver_rating', 0) }}/5</span>
+                            {% endif %}
+                        </div>
+                        {% if review.get('driver_comment') %}
+                            <p class="mb-0">{{ review.get('driver_comment') }}</p>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Đánh giá Món ăn -->
+                {% if review.get('menu_ratings') %}
+                <div class="mt-3 p-3 bg-light rounded">
+                    <h6><i class="bi bi-egg-fried"></i> Đánh giá Món ăn</h6>
+                    {% for menu_rating in review.get('menu_ratings', []) %}
+                    <div class="mb-2">
+                        <strong>{{ menu_rating.get('menu_name', 'N/A') }}</strong>
+                        <div class="mb-1">
+                            {% for i in range(5) %}
+                                <i class="bi bi-star{{ '-fill' if i < menu_rating.get('rating', 0) else '' }} text-warning"></i>
+                            {% endfor %}
+                            <span class="ms-2">{{ menu_rating.get('rating', 0) }}/5</span>
+                        </div>
+                        {% if menu_rating.get('comment') %}
+                            <p class="mb-0 small text-muted">{{ menu_rating.get('comment') }}</p>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+                <!-- Hình ảnh -->
+                {% if review.get('images') %}
+                <div class="mt-3">
+                    <h6><i class="bi bi-images"></i> Hình ảnh</h6>
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for image_url in review.get('images', []) %}
+                            <img src="{{ image_url }}" alt="Review image" class="img-thumbnail" style="max-width: 200px; max-height: 200px; object-fit: cover;">
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="alert alert-info text-center">
+            <i class="bi bi-info-circle"></i> Bạn chưa có đánh giá nào
+            <p class="mb-0 mt-2">
+                <a href="{{ url_for('customer.orders') }}" class="btn btn-primary btn-sm">
+                    <i class="bi bi-cart-check"></i> Xem đơn hàng để đánh giá
+                </a>
+            </p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+

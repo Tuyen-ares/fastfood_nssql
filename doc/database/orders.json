@@ -1,0 +1,103 @@
+[
+  {
+    "user_id": "CUST1_ID",
+    "rest_id": "REST_ID_0",
+    "items": ["Whopper Combo", "Coke Lớn"],
+    "total": 129000,
+    "delivery_fee": 15000,
+    "status": "delivered",
+    "shipper_id": "SHIPPER_ID",
+    "created_at": { "$date": "2024-01-01T08:00:00.000Z" }
+  },
+  {
+    "user_id": "CUST2_ID",
+    "rest_id": "REST_ID_1",
+    "items": ["Zinger Burger"],
+    "total": 80000,
+    "delivery_fee": 15000,
+    "status": "delivered",
+    "shipper_id": "SHIPPER_ID",
+    "created_at": { "$date": "2024-01-01T09:00:00.000Z" }
+  },
+  {
+    "user_id": "CUST3_ID",
+    "rest_id": "REST_ID_2",
+    "items": ["Cheese Burger"],
+    "total": 60000,
+    "delivery_fee": 15000,
+    "status": "delivered",
+    "shipper_id": "SHIPPER_ID",
+    "created_at": { "$date": "2024-01-01T10:00:00.000Z" }
+  },
+  {
+    "user_id": "CUST1_ID",
+    "rest_id": "REST_ID_3",
+    "items": ["Phở Bò Tái"],
+    "total": 90000,
+    "delivery_fee": 15000,
+    "status": "delivered",
+    "shipper_id": "SHIPPER_ID",
+    "created_at": { "$date": "2024-01-01T11:00:00.000Z" }
+  },
+  {
+    "user_id": "CUST2_ID",
+    "rest_id": "REST_ID_4",
+    "items": ["Pizza Margherita"],
+    "total": 214000,
+    "delivery_fee": 15000,
+    "status": "delivered",
+    "shipper_id": "SHIPPER_ID",
+    "created_at": { "$date": "2024-01-01T12:00:00.000Z" }
+  },
+  {
+    "user_id": "CUST3_ID",
+    "rest_id": "REST_ID_5",
+    "items": ["Trà Sữa Trân Châu"],
+    "total": 60000,
+    "delivery_fee": 15000,
+    "status": "pending",
+    "shipper_id": null,
+    "created_at": { "$date": "2024-01-01T13:00:00.000Z" }
+  },
+  {
+    "user_id": "CUST1_ID",
+    "rest_id": "REST_ID_6",
+    "items": ["Bánh Mì Thịt Nướng"],
+    "total": 50000,
+    "delivery_fee": 15000,
+    "status": "delivered",
+    "shipper_id": "SHIPPER_ID",
+    "created_at": { "$date": "2024-01-01T14:00:00.000Z" }
+  },
+  {
+    "user_id": "CUST2_ID",
+    "rest_id": "REST_ID_7",
+    "items": ["Cơm Tấm Sườn"],
+    "total": 70000,
+    "delivery_fee": 15000,
+    "status": "preparing",
+    "shipper_id": null,
+    "created_at": { "$date": "2024-01-01T15:00:00.000Z" }
+  },
+  {
+    "user_id": "CUST3_ID",
+    "rest_id": "REST_ID_8",
+    "items": ["Sushi Set"],
+    "total": 265000,
+    "delivery_fee": 15000,
+    "status": "pending",
+    "shipper_id": null,
+    "created_at": { "$date": "2024-01-01T15:30:00.000Z" }
+  },
+  {
+    "user_id": "CUST1_ID",
+    "rest_id": "REST_ID_9",
+    "items": ["Gà Rán 6 Miếng"],
+    "total": 144000,
+    "delivery_fee": 15000,
+    "status": "delivered",
+    "shipper_id": "SHIPPER_ID",
+    "created_at": { "$date": "2024-01-01T15:50:00.000Z" }
+  }
+]
+

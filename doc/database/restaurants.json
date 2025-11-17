@@ -1,0 +1,143 @@
+[
+  {
+    "name": "Burger King Lê Lợi",
+    "addr": "100 Lê Lợi Q1",
+    "loc": {
+      "type": "Point",
+      "coordinates": [106.6995, 10.7769]
+    },
+    "open": "08:00",
+    "close": "22:00",
+    "rating": 4.5,
+    "status": "approved",
+    "owner_id": "OWNER1_ID",
+    "created_at": { "$date": "2024-01-01T00:00:00.000Z" }
+  },
+  {
+    "name": "KFC Nguyễn Huệ",
+    "addr": "50 Nguyễn Huệ Q1",
+    "loc": {
+      "type": "Point",
+      "coordinates": [106.7028, 10.7745]
+    },
+    "open": "09:00",
+    "close": "23:00",
+    "rating": 4.3,
+    "status": "approved",
+    "owner_id": "OWNER1_ID",
+    "created_at": { "$date": "2024-01-01T00:00:00.000Z" }
+  },
+  {
+    "name": "Lotteria Bến Thành",
+    "addr": "Chợ Bến Thành",
+    "loc": {
+      "type": "Point",
+      "coordinates": [106.6980, 10.7720]
+    },
+    "open": "07:30",
+    "close": "21:30",
+    "rating": 4.1,
+    "status": "approved",
+    "owner_id": "OWNER1_ID",
+    "created_at": { "$date": "2024-01-01T00:00:00.000Z" }
+  },
+  {
+    "name": "Phở 24 Pasteur",
+    "addr": "63 Pasteur Q1",
+    "loc": {
+      "type": "Point",
+      "coordinates": [106.6970, 10.7790]
+    },
+    "open": "06:00",
+    "close": "23:00",
+    "rating": 4.6,
+    "status": "approved",
+    "owner_id": "OWNER1_ID",
+    "created_at": { "$date": "2024-01-01T00:00:00.000Z" }
+  },
+  {
+    "name": "Pizza 4P's",
+    "addr": "8 Lê Thánh Tôn",
+    "loc": {
+      "type": "Point",
+      "coordinates": [106.7010, 10.7770]
+    },
+    "open": "11:00",
+    "close": "22:00",
+    "rating": 4.8,
+    "status": "approved",
+    "owner_id": "OWNER1_ID",
+    "created_at": { "$date": "2024-01-01T00:00:00.000Z" }
+  },
+  {
+    "name": "Highlands Coffee",
+    "addr": "22 Nguyễn Huệ",
+    "loc": {
+      "type": "Point",
+      "coordinates": [106.7030, 10.7750]
+    },
+    "open": "07:00",
+    "close": "22:00",
+    "rating": 4.2,
+    "status": "approved",
+    "owner_id": "OWNER1_ID",
+    "created_at": { "$date": "2024-01-01T00:00:00.000Z" }
+  },
+  {
+    "name": "Bánh Mì Huỳnh Hoa",
+    "addr": "26 Lê Thị Riêng",
+    "loc": {
+      "type": "Point",
+      "coordinates": [106.6950, 10.7800]
+    },
+    "open": "05:30",
+    "close": "22:00",
+    "rating": 4.9,
+    "status": "approved",
+    "owner_id": "OWNER1_ID",
+    "created_at": { "$date": "2024-01-01T00:00:00.000Z" }
+  },
+  {
+    "name": "Cơm Tấm Ba Ghiền",
+    "addr": "84 Đinh Tiên Hoàng",
+    "loc": {
+      "type": "Point",
+      "coordinates": [106.6960, 10.7810]
+    },
+    "open": "10:00",
+    "close": "21:00",
+    "rating": 4.4,
+    "status": "approved",
+    "owner_id": "OWNER1_ID",
+    "created_at": { "$date": "2024-01-01T00:00:00.000Z" }
+  },
+  {
+    "name": "Sushi Rei",
+    "addr": "10 Nguyễn Thiệp",
+    "loc": {
+      "type": "Point",
+      "coordinates": [106.7040, 10.7760]
+    },
+    "open": "11:30",
+    "close": "22:30",
+    "rating": 4.7,
+    "status": "pending",
+    "owner_id": "OWNER1_ID",
+    "created_at": { "$date": "2024-01-01T00:00:00.000Z" }
+  },
+  {
+    "name": "Gà Rán Popeyes",
+    "addr": "2 Phạm Ngọc Thạch",
+    "loc": {
+      "type": "Point",
+      "coordinates": [106.6900, 10.7830]
+    },
+    "open": "10:00",
+    "close": "22:00",
+    "rating": 4.0,
+    "status": "banned",
+    "owner_id": "OWNER1_ID",
+    "created_at": { "$date": "2024-01-01T00:00:00.000Z" }
+  }
+]
+

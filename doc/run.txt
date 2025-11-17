@@ -1,0 +1,35 @@
+# ============================================
+# HƯỚNG DẪN CHẠY PROJECT
+# ============================================
+
+# 1. Tạo venv (chỉ cần làm 1 lần)
+python -m venv venv
+
+# 2. Kích hoạt venv (mỗi lần mở terminal mới)
+# ============================================
+# NẾU GẶP LỖI "running scripts is disabled":
+# ============================================
+# CÁCH 1: Dùng activate.bat (không cần thay đổi Execution Policy)
+.\venv\Scripts\activate.bat
+
+# CÁCH 2: Thay đổi Execution Policy (cần quyền admin, chỉ làm 1 lần)
+# Mở PowerShell as Administrator và chạy:
+# Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+# Sau đó dùng:
+# .\venv\Scripts\Activate.ps1
+
+# CÁCH 3: Chạy trực tiếp với Python từ venv (không cần activate)
+# .\venv\Scripts\python.exe -m pip install -r requirements.txt
+# .\venv\Scripts\python.exe run.py
+
+# 3. Cài đặt dependencies (chỉ cần làm 1 lần, sau khi activate venv)
+pip install -r requirements.txt
+
+# 4. Chạy project (sau khi activate venv)
+python run.py
+
+# ============================================
+# LƯU Ý:
+# - Nếu dùng CÁCH 1 (activate.bat), terminal sẽ hiển thị (venv) ở đầu dòng
+# - Nếu dùng CÁCH 3, không cần activate, chỉ cần thay "python" bằng ".\venv\Scripts\python.exe"
+# ============================================

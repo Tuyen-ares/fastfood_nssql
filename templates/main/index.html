@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block title %}Trang chủ - FastFood{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="container-fluid px-0 mb-5">
+    <div class="position-relative">
+        <img src="{{ url_for('static', filename='img/bg5.jpg') }}" class="img-fluid w-100" style="height: 400px; object-fit: cover;" alt="FastFood Background">
+        <div class="position-absolute top-50 start-50 translate-middle text-center text-white" style="background: rgba(0,0,0,0.5); padding: 2rem; border-radius: 10px;">
+            <h1 class="display-4 fw-bold mb-3">FastFood Delivery</h1>
+            <p class="lead">Giao thức ăn nhanh đến tận nhà bạn</p>
+            {% if not session.user_id %}
+                <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg me-2">Đăng ký ngay</a>
+                <a href="{{ url_for('customer.restaurants') }}" class="btn btn-outline-light btn-lg">Xem nhà hàng</a>
+            {% else %}
+                <a href="{{ url_for('customer.restaurants') }}" class="btn btn-primary btn-lg">Đặt món ngay</a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="container my-5">
+
+    <!-- Menu Items by Category -->
+    {% if categories %}
+    <h2 class="text-center mb-5" style="font-weight: 700; color: #2c3e50;">Món ăn theo danh mục</h2>
+    {% for category, menus in categories.items() %}
+    <div class="mb-5">
+        <h3 class="mb-4" style="font-weight: 600; color: #34495e; border-left: 4px solid #3498db; padding-left: 15px;">
+            <i class="bi bi-tag-fill text-primary"></i> 
+            {{ category|title }}
+        </h3>
+        <div class="row g-4">
+            {% for menu in menus[:6] %}
+            <div class="col-md-4 col-lg-3">
+                <div class="card h-100 shadow-sm border-0" style="transition: transform 0.3s ease, box-shadow 0.3s ease; border-radius: 15px; overflow: hidden;">
+                    <div class="position-relative" style="overflow: hidden; border-radius: 15px 15px 0 0;">
+                        <img src="{{ menu.display_image }}" 
+                             class="card-img-top" 
+                             style="height: 200px; object-fit: cover; transition: transform 0.3s ease;" 
+                             alt="{{ menu.get('name', 'N/A') }}"
+                             onmouseover="this.style.transform='scale(1.05)'"
+                             onmouseout="this.style.transform='scale(1)'">
+                    </div>
+                    <div class="card-body d-flex flex-column" style="padding: 1.25rem;">
+                        <h5 class="card-title mb-2" style="font-size: 1.1rem; font-weight: 600;">{{ menu.get('name', 'N/A') }}</h5>
+                        <p class="card-text text-muted small flex-grow-1 mb-3" style="font-size: 0.85rem; line-height: 1.4;">
+                            {{ menu.get('description', 'Món ăn ngon miệng')[:50] }}{% if menu.get('description', '')|length > 50 %}...{% endif %}
+                        </p>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="text-danger fw-bold" style="font-size: 1.1rem;">{{ "{:,.0f}".format(menu.get('price', 0)) }} đ</span>
+                            <form method="POST" action="{{ url_for('customer.add_to_cart_from_home') }}" class="d-inline">
+                                <input type="hidden" name="menu_id" value="{{ menu._id }}">
+                                <input type="hidden" name="rest_id" value="{{ menu.restaurant._id }}">
+                                <button type="submit" 
+                                        class="btn btn-sm btn-primary rounded-pill px-3"
+                                        style="transition: all 0.3s ease;">
+                                    <i class="bi bi-cart-plus"></i> Đặt món
+                                </button>
+                            </form>
+                        </div>
+                        <small class="text-muted mt-2" style="font-size: 0.8rem;">
+                            <i class="bi bi-shop"></i> {{ menu.restaurant.get('name', 'N/A') }}
+                        </small>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% if menus|length > 6 %}
+        <div class="text-center mt-4">
+            <a href="{{ url_for('customer.restaurants') }}?category={{ category }}" 
+               class="btn btn-outline-primary rounded-pill px-4"
+               style="transition: all 0.3s ease;">
+                <i class="bi bi-arrow-right"></i> Xem thêm {{ menus|length - 6 }} món khác
+            </a>
+        </div>
+        {% endif %}
+    </div>
+    {% endfor %}
+    {% else %}
+    <div class="alert alert-info text-center">
+        <i class="bi bi-info-circle"></i> Chưa có món ăn nào. Vui lòng quay lại sau!
+    </div>
+    {% endif %}
+
+    <!-- Features -->
+    <div class="row mt-5">
+        <div class="col-md-4 text-center mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <i class="bi bi-truck display-1 text-primary"></i>
+                    <h3 class="card-title">Giao hàng nhanh</h3>
+                    <p class="card-text">Nhận hàng trong vòng 30-45 phút</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 text-center mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <i class="bi bi-shield-check display-1 text-success"></i>
+                    <h3 class="card-title">An toàn</h3>
+                    <p class="card-text">Đảm bảo vệ sinh an toàn thực phẩm</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 text-center mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <i class="bi bi-star display-1 text-warning"></i>
+                    <h3 class="card-title">Chất lượng</h3>
+                    <p class="card-text">Hàng trăm nhà hàng uy tín</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

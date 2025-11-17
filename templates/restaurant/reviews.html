@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block title %}Đánh giá Nhà hàng{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Đánh giá Nhà hàng</h2>
+        <a href="{{ url_for('restaurant.dashboard') }}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Quay lại Dashboard
+        </a>
+    </div>
+    
+    <!-- Filter by Restaurant -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="GET" class="row g-3">
+                <div class="col-md-4">
+                    <label for="restaurant_filter" class="form-label">Lọc theo nhà hàng</label>
+                    <select name="restaurant" id="restaurant_filter" class="form-select" onchange="this.form.submit()">
+                        <option value="">Tất cả nhà hàng</option>
+                        {% for rest in restaurants %}
+                        <option value="{{ rest._id }}" {% if request.args.get('restaurant') == rest._id|string %}selected{% endif %}>
+                            {{ rest.get('name', 'N/A') }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label for="rating_filter" class="form-label">Lọc theo số sao</label>
+                    <select name="rating" id="rating_filter" class="form-select" onchange="this.form.submit()">
+                        <option value="">Tất cả</option>
+                        <option value="5" {% if request.args.get('rating') == '5' %}selected{% endif %}>5 sao</option>
+                        <option value="4" {% if request.args.get('rating') == '4' %}selected{% endif %}>4 sao</option>
+                        <option value="3" {% if request.args.get('rating') == '3' %}selected{% endif %}>3 sao</option>
+                        <option value="2" {% if request.args.get('rating') == '2' %}selected{% endif %}>2 sao</option>
+                        <option value="1" {% if request.args.get('rating') == '1' %}selected{% endif %}>1 sao</option>
+                        <option value="0" {% if request.args.get('rating') == '0' %}selected{% endif %}>0 sao</option>
+                    </select>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Reviews List -->
+    <div class="card">
+        <div class="card-body">
+            {% if reviews %}
+                {% for review in reviews %}
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <h6 class="mb-1">
+                                    <i class="bi bi-shop"></i> {{ review.restaurant.get('name', 'N/A') }}
+                                </h6>
+                                <small class="text-muted">
+                                    <i class="bi bi-person"></i> {{ review.customer.get('name', 'N/A') if review.customer else 'N/A' }}
+                                    <span class="ms-2">
+                                        <i class="bi bi-calendar"></i> {{ review.get('created_at').strftime('%d/%m/%Y %H:%M') if review.get('created_at') else 'N/A' }}
+                                    </span>
+                                </small>
+                            </div>
+                            <div>
+                                {% for i in range(5) %}
+                                    <i class="bi bi-star{{ '-fill' if i < review.get('restaurant_rating', 0) else '' }} text-warning"></i>
+                                {% endfor %}
+                                {% if review.get('restaurant_rating') == 0 %}
+                                    <span class="text-danger ms-1">0 sao</span>
+                                {% else %}
+                                    <span class="ms-1">{{ review.get('restaurant_rating', 0) }}/5</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% if review.get('restaurant_comment') %}
+                            <p class="mb-2">{{ review.get('restaurant_comment') }}</p>
+                        {% endif %}
+                        
+                        {% if review.get('menu_ratings') %}
+                        <div class="mt-3 p-2 bg-light rounded">
+                            <strong class="small">Đánh giá món ăn:</strong>
+                            {% for menu_rating in review.get('menu_ratings', []) %}
+                            <div class="mt-2">
+                                <strong>{{ menu_rating.get('menu_name', 'N/A') }}</strong>
+                                <div class="mb-1">
+                                    {% for i in range(5) %}
+                                        <i class="bi bi-star{{ '-fill' if i < menu_rating.get('rating', 0) else '' }} text-warning"></i>
+                                    {% endfor %}
+                                    <span class="ms-2">{{ menu_rating.get('rating', 0) }}/5</span>
+                                </div>
+                                {% if menu_rating.get('comment') %}
+                                    <p class="mb-0 small text-muted">{{ menu_rating.get('comment') }}</p>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        
+                        {% if review.get('images') %}
+                            <div class="mt-2">
+                                {% for image_url in review.get('images', []) %}
+                                    <img src="{{ image_url }}" alt="Review image" class="img-thumbnail me-2" style="max-width: 150px; max-height: 150px; object-fit: cover;">
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="alert alert-info text-center">
+                    <i class="bi bi-info-circle"></i> Chưa có đánh giá nào
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+

@@ -1,0 +1,153 @@
+🚚 Chức năng Shipper (Tài xế giao hàng) cần có
+
+1. Quản lý Tài khoản
+✅ Đăng ký tài khoản shipper
+✅ Đăng nhập/Đăng xuất
+✅ Xem và chỉnh sửa thông tin cá nhân:
+   - Tên, số điện thoại
+   - Ảnh đại diện
+✅ Cập nhật thông tin phương tiện:
+   - Loại xe (Wave, SH, Air Blade...)
+   - Biển số xe
+✅ Cập nhật giấy tờ:
+   - CCCD/CMND
+   - Bằng lái xe
+   - Upload ảnh giấy tờ
+✅ Xem trạng thái tài khoản:
+   - pending (chờ duyệt)
+   - approved (đã duyệt)
+   - banned (bị khóa)
+✅ Đổi mật khẩu
+
+2. Quản lý Trạng thái Online/Offline
+✅ Bật/Tắt trạng thái online
+✅ Xem trạng thái hiện tại (online/offline)
+✅ Tự động chuyển offline khi không hoạt động
+✅ Nhận thông báo khi có đơn hàng mới (khi online)
+
+3. Nhận & Quản lý Đơn hàng
+✅ Xem danh sách đơn hàng có sẵn (chưa có shipper):
+   - Hiển thị khoảng cách từ vị trí hiện tại
+   - Địa chỉ nhà hàng và khách hàng
+   - Tổng tiền đơn hàng
+   - Phí giao hàng
+✅ Nhận đơn hàng (accept order):
+   - Chọn đơn hàng muốn nhận
+   - Xác nhận nhận đơn
+✅ Xem danh sách đơn hàng đã nhận:
+   - Đơn đang giao
+   - Đơn đã hoàn thành
+   - Đơn đã hủy
+✅ Từ chối đơn hàng (nếu có lý do)
+✅ Hủy đơn hàng đã nhận (nếu chưa lấy hàng)
+
+4. Xem Chi tiết Đơn hàng
+✅ Thông tin đơn hàng:
+   - Mã đơn hàng
+   - Thời gian đặt hàng
+   - Danh sách món ăn
+   - Tổng tiền
+✅ Thông tin nhà hàng:
+   - Tên, địa chỉ
+   - Số điện thoại
+   - Vị trí trên bản đồ
+✅ Thông tin khách hàng:
+   - Tên, số điện thoại
+   - Địa chỉ giao hàng
+   - Ghi chú (nếu có)
+✅ Phương thức thanh toán:
+   - Đã thanh toán online
+   - Thanh toán khi nhận (COD)
+
+5. Điều hướng & Giao hàng
+✅ Xem bản đồ:
+   - Vị trí hiện tại của shipper
+   - Vị trí nhà hàng
+   - Vị trí khách hàng
+   - Đường đi tối ưu
+✅ Điều hướng GPS:
+   - Chỉ đường đến nhà hàng
+   - Chỉ đường đến địa chỉ khách hàng
+✅ Cập nhật trạng thái đơn hàng:
+   - Đã đến nhà hàng
+   - Đã lấy hàng
+   - Đang giao hàng
+   - Đã đến nơi
+   - Đã giao hàng thành công
+
+6. Xác nhận Giao hàng
+✅ Xác nhận đã lấy hàng tại nhà hàng:
+   - Chụp ảnh đơn hàng (tùy chọn)
+   - Xác nhận đã nhận đủ món
+✅ Xác nhận đã giao hàng:
+   - Chụp ảnh giao hàng (tùy chọn)
+   - Xác nhận khách đã nhận hàng
+   - Nhập mã OTP (nếu khách yêu cầu)
+✅ Thu tiền (nếu COD):
+   - Xác nhận đã thu tiền
+   - Nhập số tiền đã thu
+   - Chụp ảnh hóa đơn (tùy chọn)
+
+7. Liên lạc
+✅ Gọi điện cho nhà hàng
+✅ Gọi điện cho khách hàng
+✅ Chat với nhà hàng
+✅ Chat với khách hàng
+✅ Chat với admin (khi có vấn đề)
+
+8. Thống kê & Thu nhập
+✅ Xem thống kê theo ngày/tuần/tháng:
+   - Số đơn đã giao
+   - Số đơn hoàn thành
+   - Số đơn bị hủy
+   - Tổng thu nhập
+   - Phí giao hàng nhận được
+✅ Xem chi tiết từng đơn hàng:
+   - Phí giao hàng
+   - Thời gian giao
+   - Đánh giá từ khách hàng
+✅ Xem lịch sử thu nhập
+✅ Xem báo cáo thu nhập (có thể export)
+
+9. Đánh giá & Xếp hạng
+✅ Xem đánh giá từ khách hàng:
+   - Điểm số (1-5 sao)
+   - Nhận xét
+✅ Xem đánh giá từ nhà hàng
+✅ Xem xếp hạng trong hệ thống
+✅ Xem thống kê đánh giá:
+   - Đánh giá trung bình
+   - Tổng số đánh giá
+   - Phân tích xu hướng
+
+10. Khiếu nại & Hỗ trợ
+✅ Tạo khiếu nại về đơn hàng:
+   - Vấn đề với nhà hàng
+   - Vấn đề với khách hàng
+   - Vấn đề kỹ thuật
+✅ Chat với admin
+✅ Yêu cầu hỗ trợ
+✅ Xem lịch sử khiếu nại
+
+11. Thông báo
+✅ Nhận thông báo đơn hàng mới
+✅ Thông báo cập nhật đơn hàng
+✅ Thông báo từ admin
+✅ Thông báo hệ thống (bảo trì, cập nhật...)
+✅ Thông báo thu nhập
+
+12. Cài đặt & Tùy chọn
+✅ Cài đặt thông báo
+✅ Chọn khu vực hoạt động (nếu có)
+✅ Xem hướng dẫn sử dụng
+✅ Xem chính sách & quy định
+✅ Đăng xuất
+
+13. Tính năng Nâng cao (Tùy chọn)
+✅ Đặt mục tiêu số đơn/ngày
+✅ Xem bảng xếp hạng shipper
+✅ Chế độ làm việc (full-time/part-time)
+✅ Lịch làm việc
+✅ Xem thời tiết (để chuẩn bị giao hàng)
+✅ Ghi chú về địa chỉ khó tìm
+
