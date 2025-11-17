@@ -2,6 +2,8 @@
 
 Hệ thống giao thức ăn nhanh sử dụng Flask và MongoDB (NoSQL)
 
+Dự án giao thức ăn nhanh dùng no ssql phân 4 nhóm quyền cho shipper, khách hàng, admin, chủ nhà hàng
+
 ## Công nghệ sử dụng
 
 - **Backend**: Flask (Python)
