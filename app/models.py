@@ -310,12 +310,13 @@ class Order:
     def find_available():
         """
         Tìm các đơn hàng chưa có shipper nhận (để shipper có thể nhận đơn)
-        Trả về: List các order chưa có shipper và đang ở trạng thái pending hoặc preparing
+        Chỉ hiển thị đơn đã được chủ nhà hàng chấp nhận (status = 'preparing')
+        Trả về: List các order chưa có shipper và đang ở trạng thái preparing (đã được chủ nhà hàng chấp nhận)
         """
-        # Tìm đơn hàng có shipper_id là None (chưa có tài xế) và status là pending hoặc preparing
+        # Tìm đơn hàng có shipper_id là None (chưa có tài xế) và status là preparing (đã được chủ nhà hàng chấp nhận)
         return list(get_db().orders.find({
             "shipper_id": None,  # Chưa có tài xế nhận
-            "status": {"$in": ["pending", "preparing"]}  # Trạng thái đang chờ hoặc đang chuẩn bị
+            "status": "preparing"  # Đã được chủ nhà hàng chấp nhận, chờ shipper nhận
         }))
     
     @staticmethod
@@ -558,4 +559,215 @@ class Review:
             "shipper_id": ObjectId(shipper_id),  # ID của shipper
             "driver_rating": 0  # Đánh giá 0 sao
         })
+
+class Voucher:
+    """Class Voucher - Model quản lý mã giảm giá"""
+    
+    @staticmethod
+    def find_by_restaurant(rest_id, filters=None):
+        """
+        Tìm tất cả voucher của một nhà hàng
+        Tham số:
+            rest_id (string) - ID của restaurant
+            filters (dict, optional) - Điều kiện lọc thêm (ví dụ: {"status": "active"})
+        Trả về: List các document voucher thuộc về restaurant đó
+        """
+        query = {"rest_id": ObjectId(rest_id)}
+        if filters:
+            query.update(filters)
+        return list(get_db().vouchers.find(query).sort("created_at", -1))
+    
+    @staticmethod
+    def find_by_id(voucher_id):
+        """
+        Tìm voucher theo ID
+        Tham số: voucher_id (string) - ID của voucher cần tìm
+        Trả về: Document của voucher nếu tìm thấy, None nếu không tìm thấy
+        """
+        return get_db().vouchers.find_one({"_id": ObjectId(voucher_id)})
+    
+    @staticmethod
+    def find_by_code(code, rest_id=None):
+        """
+        Tìm voucher theo mã code
+        Tham số: 
+            code (string) - Mã voucher
+            rest_id (string, optional) - ID của restaurant (để kiểm tra)
+        Trả về: Document của voucher nếu tìm thấy, None nếu không tìm thấy
+        """
+        query = {"code": code, "status": "active"}
+        if rest_id:
+            query["rest_id"] = ObjectId(rest_id)
+        return get_db().vouchers.find_one(query)
+    
+    @staticmethod
+    def find_available_for_cart(rest_id, cart_items, subtotal):
+        """
+        Tìm các voucher có thể áp dụng cho giỏ hàng hiện tại
+        Tham số:
+            rest_id (string) - ID của restaurant
+            cart_items (list) - Danh sách items trong giỏ hàng [{menu_id, quantity}, ...]
+            subtotal (float) - Tổng tiền tạm tính
+        Trả về: List các voucher có thể áp dụng
+        """
+        now = datetime.now()
+        menu_ids = [ObjectId(item['menu_id']) for item in cart_items if 'menu_id' in item]
+        total_quantity = sum(item.get('quantity', 0) for item in cart_items)
+        
+        query = {
+            "rest_id": ObjectId(rest_id),
+            "status": "active",
+            "quantity": {"$gt": 0},  # Còn số lượng
+            "$and": [
+                {
+                    "$or": [
+                        {"start_date": {"$exists": False}},
+                        {"start_date": None},
+                        {"start_date": {"$lte": now}}
+                    ]
+                },
+                {
+                    "$or": [
+                        {"end_date": {"$exists": False}},
+                        {"end_date": None},
+                        {"end_date": {"$gte": now}}
+                    ]
+                }
+            ]
+        }
+        
+        vouchers = list(get_db().vouchers.find(query))
+        available_vouchers = []
+        
+        for voucher in vouchers:
+            # Kiểm tra điều kiện số lượng đơn hàng tối thiểu
+            min_order_quantity = voucher.get('min_order_quantity', 0)
+            if min_order_quantity > 0 and total_quantity < min_order_quantity:
+                continue
+            
+            # Kiểm tra voucher áp dụng cho món ăn cụ thể
+            applicable_menu_ids = voucher.get('applicable_menu_ids', [])
+            if applicable_menu_ids:
+                # Chuyển sang ObjectId nếu cần
+                applicable_ids = [ObjectId(mid) if not isinstance(mid, ObjectId) else mid for mid in applicable_menu_ids]
+                # Kiểm tra xem có món nào trong giỏ hàng khớp không
+                if not any(mid in applicable_ids for mid in menu_ids):
+                    continue
+            
+            available_vouchers.append(voucher)
+        
+        return available_vouchers
+    
+    @staticmethod
+    def create(data):
+        """
+        Tạo voucher mới
+        Tham số: data (dict) - Dictionary chứa thông tin voucher
+        Trả về: ID của voucher vừa được tạo
+        """
+        data['rest_id'] = ObjectId(data['rest_id'])
+        data['created_at'] = datetime.now()
+        
+        # Chuyển applicable_menu_ids sang ObjectId nếu có
+        if 'applicable_menu_ids' in data and data['applicable_menu_ids']:
+            data['applicable_menu_ids'] = [ObjectId(mid) if not isinstance(mid, ObjectId) else mid for mid in data['applicable_menu_ids']]
+        
+        # Chuyển start_date và end_date sang datetime nếu có
+        if 'start_date' in data and data['start_date'] and isinstance(data['start_date'], str):
+            data['start_date'] = datetime.fromisoformat(data['start_date'].replace('Z', '+00:00'))
+        if 'end_date' in data and data['end_date'] and isinstance(data['end_date'], str):
+            data['end_date'] = datetime.fromisoformat(data['end_date'].replace('Z', '+00:00'))
+        
+        result = get_db().vouchers.insert_one(data)
+        return result.inserted_id
+    
+    @staticmethod
+    def update(voucher_id, data):
+        """
+        Cập nhật thông tin voucher
+        Tham số:
+            voucher_id (string) - ID của voucher cần cập nhật
+            data (dict) - Dictionary chứa các trường cần cập nhật
+        Trả về: Kết quả của thao tác update
+        """
+        data['updated_at'] = datetime.now()
+        
+        if 'rest_id' in data:
+            data['rest_id'] = ObjectId(data['rest_id'])
+        
+        if 'applicable_menu_ids' in data and data['applicable_menu_ids']:
+            data['applicable_menu_ids'] = [ObjectId(mid) if not isinstance(mid, ObjectId) else mid for mid in data['applicable_menu_ids']]
+        
+        if 'start_date' in data and data['start_date'] and isinstance(data['start_date'], str):
+            data['start_date'] = datetime.fromisoformat(data['start_date'].replace('Z', '+00:00'))
+        if 'end_date' in data and data['end_date'] and isinstance(data['end_date'], str):
+            data['end_date'] = datetime.fromisoformat(data['end_date'].replace('Z', '+00:00'))
+        
+        return get_db().vouchers.update_one(
+            {"_id": ObjectId(voucher_id)},
+            {"$set": data}
+        )
+    
+    @staticmethod
+    def delete(voucher_id):
+        """
+        Xóa voucher
+        Tham số: voucher_id (string) - ID của voucher cần xóa
+        Trả về: Kết quả của thao tác delete
+        """
+        return get_db().vouchers.delete_one({"_id": ObjectId(voucher_id)})
+    
+    @staticmethod
+    def apply_voucher(voucher, subtotal, delivery_fee=15000):
+        """
+        Áp dụng voucher và tính toán giá sau giảm
+        Tham số:
+            voucher (dict) - Document voucher
+            subtotal (float) - Tổng tiền tạm tính
+            delivery_fee (float) - Phí giao hàng (mặc định 15000)
+        Trả về: Dictionary chứa discount_amount, final_subtotal, final_delivery_fee, final_total
+        """
+        voucher_type = voucher.get('type', 'discount')  # discount hoặc free_ship
+        discount_type = voucher.get('discount_type', 'percent')  # percent hoặc amount
+        value = voucher.get('value', 0)
+        
+        discount_amount = 0
+        final_subtotal = subtotal
+        final_delivery_fee = delivery_fee
+        
+        if voucher_type == 'discount':
+            # Voucher giảm giá món ăn
+            if discount_type == 'percent':
+                discount_amount = subtotal * (value / 100)
+            else:  # amount
+                discount_amount = min(value, subtotal)  # Không giảm quá số tiền có
+            
+            final_subtotal = max(0, subtotal - discount_amount)
+            final_delivery_fee = delivery_fee
+        elif voucher_type == 'free_ship':
+            # Voucher miễn phí ship
+            discount_amount = delivery_fee
+            final_subtotal = subtotal
+            final_delivery_fee = 0
+        
+        final_total = final_subtotal + final_delivery_fee
+        
+        return {
+            'discount_amount': discount_amount,
+            'final_subtotal': final_subtotal,
+            'final_delivery_fee': final_delivery_fee,
+            'final_total': final_total
+        }
+    
+    @staticmethod
+    def use_voucher(voucher_id):
+        """
+        Sử dụng voucher (giảm số lượng)
+        Tham số: voucher_id (string) - ID của voucher
+        Trả về: Kết quả của thao tác update
+        """
+        return get_db().vouchers.update_one(
+            {"_id": ObjectId(voucher_id)},
+            {"$inc": {"quantity": -1}, "$set": {"updated_at": datetime.now()}}
+        )
 

@@ -28,8 +28,14 @@
                                 <td>{{ "{:,.0f}".format(order.get('total', 0)) }} đ</td>
                                 <td>{{ "{:,.0f}".format(order.get('delivery_fee', 0)) }} đ</td>
                                 <td>
-                                    <span class="badge bg-{{ 'warning' if order.get('status') == 'pending' else 'info' if order.get('status') == 'preparing' else 'primary' if order.get('status') == 'delivering' else 'success' if order.get('status') == 'delivered' else 'danger' }}">
+                                    <span class="badge bg-{{ 'warning' if order.get('status') == 'pending' else 'info' if order.get('status') == 'preparing' else 'primary' if order.get('status') == 'delivering' else 'warning' if order.get('status') == 'delivered' else 'success' if order.get('status') == 'completed' else 'danger' }}">
+                                        {% if order.get('status') == 'delivered' %}
+                                        Chờ xác nhận
+                                        {% elif order.get('status') == 'completed' %}
+                                        Hoàn tất
+                                        {% else %}
                                         {{ order.get('status', 'N/A') }}
+                                        {% endif %}
                                     </span>
                                 </td>
                                 <td>

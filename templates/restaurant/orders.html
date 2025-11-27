@@ -6,10 +6,34 @@
 <div class="container my-5">
     <h2 class="mb-4">Đơn hàng của Nhà hàng</h2>
     
+    {% if restaurants and restaurants|length > 1 %}
+    <div class="card mb-3">
+        <div class="card-body">
+            <label class="form-label"><strong>Chọn nhà hàng:</strong></label>
+            <select class="form-select" onchange="window.location.href='{{ url_for('restaurant.orders') }}?rest_id=' + this.value + '&status={{ request.args.get('status', '') }}'">
+                {% for rest in restaurants %}
+                <option value="{{ rest._id }}" {% if selected_rest_id_str and rest._id_str == selected_rest_id_str %}selected{% endif %}>
+                    {{ rest.get('name', 'N/A') }} - {{ rest.get('addr', 'N/A') }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+    {% endif %}
+    
+    {% if restaurant %}
+    <div class="alert alert-info mb-3">
+        <i class="bi bi-info-circle"></i> Đang xem đơn hàng của: <strong>{{ restaurant.get('name', 'N/A') }}</strong>
+    </div>
+    {% endif %}
+    
     <!-- Filter -->
     <div class="card mb-4">
         <div class="card-body">
             <form method="GET" class="row g-3">
+                {% if restaurant %}
+                <input type="hidden" name="rest_id" value="{{ restaurant._id }}">
+                {% endif %}
                 <div class="col-md-3">
                     <label for="status" class="form-label">Trạng thái</label>
                     <select name="status" id="status" class="form-select">
@@ -53,7 +77,19 @@
                                 </td>
                                 <td>{{ order.get('created_at').strftime('%d/%m/%Y %H:%M') if order.get('created_at') else 'N/A' }}</td>
                                 <td>
-                                    <a href="#" class="btn btn-sm btn-info">Chi tiết</a>
+                                    <a href="{{ url_for('restaurant.order_detail', order_id=order._id, rest_id=restaurant._id if restaurant else '') }}" class="btn btn-sm btn-info">Chi tiết</a>
+                                    {% if order.get('status') == 'pending' and restaurant and restaurant.get('status') == 'approved' %}
+                                    <form method="POST" action="{{ url_for('restaurant.accept_order', order_id=order._id) }}" class="d-inline">
+                                        <button type="submit" class="btn btn-sm btn-success" onclick="return confirm('Bạn có chắc chắn muốn chấp nhận đơn hàng này?')">
+                                            <i class="bi bi-check-circle"></i> Chấp nhận
+                                        </button>
+                                    </form>
+                                    <form method="POST" action="{{ url_for('restaurant.reject_order', order_id=order._id) }}" class="d-inline">
+                                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Bạn có chắc chắn muốn từ chối đơn hàng này?')">
+                                            <i class="bi bi-x-circle"></i> Từ chối
+                                        </button>
+                                    </form>
+                                    {% endif %}
                                 </td>
                             </tr>
                             {% endfor %}
@@ -69,7 +105,7 @@
     </div>
     
     <div class="mt-3">
-        <a href="{{ url_for('restaurant.dashboard') }}" class="btn btn-secondary">
+        <a href="{{ url_for('restaurant.dashboard', rest_id=restaurant._id if restaurant else '') }}" class="btn btn-secondary">
             <i class="bi bi-arrow-left"></i> Quay lại Dashboard
         </a>
     </div>

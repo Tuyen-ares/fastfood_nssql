@@ -61,11 +61,6 @@
                             {{ user.get('status', 'N/A') }}
                         </span>
                     </p>
-                    <p><strong>Online:</strong> 
-                        <span class="badge bg-{{ 'success' if user.get('is_online') else 'secondary' }}">
-                            {{ 'Có' if user.get('is_online') else 'Không' }}
-                        </span>
-                    </p>
                 </div>
             </div>
         </div>

@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
-from app.models import Order, User, Restaurant, Review
+from app.models import Order, User, Restaurant, Review, Payment
 from app.utils.auth import login_required, get_current_user
 from app.utils.helpers import to_object_id
 from app.database import get_db
@@ -26,11 +26,13 @@ def dashboard():
     # Get available orders
     available_orders = Order.find_available()
     
-    # Get my orders
-    my_orders = list(get_db().orders.find({
-        'shipper_id': to_object_id(str(user['_id'])),
-        'status': {'$in': ['preparing', 'delivering']}
+    # Get my orders (all statuses for tab view)
+    my_orders_all = list(get_db().orders.find({
+        'shipper_id': to_object_id(str(user['_id']))
     }).sort('created_at', -1))
+    
+    # Get active orders (preparing and delivering) for main view
+    my_orders = [o for o in my_orders_all if o.get('status') in ['preparing', 'delivering']]
     
     # Get statistics
     stats = user.get('delivery_stats', {})
@@ -40,30 +42,17 @@ def dashboard():
     delivery_earnings = get_shipper_earnings(str(user['_id']))
     stats['delivery_earnings'] = delivery_earnings
     
+    # Calculate stats
+    from app.models import Review
+    stats['total_orders'] = len(my_orders_all)
+    stats['completed_orders'] = len([o for o in my_orders_all if o.get('status') in ['delivered', 'completed']])
+    stats['avg_rating'] = Review.calculate_shipper_rating(str(user['_id']))
+    
     return render_template('shipper/dashboard.html',
                          user=user,
                          available_orders=available_orders,
-                         my_orders=my_orders,
+                         my_orders=my_orders_all,  # Pass all orders for tabs
                          stats=stats)
-
-@shipper_bp.route('/toggle-online', methods=['POST'])
-@login_required
-def toggle_online():
-    """Toggle online/offline status"""
-    user = get_current_user()
-    if not user or user.get('role') != 'shipper':
-        return jsonify({'success': False, 'message': 'Unauthorized'})
-    
-    current_status = user.get('is_online', False)
-    new_status = not current_status
-    
-    User.update(str(user['_id']), {'is_online': new_status})
-    
-    return jsonify({
-        'success': True,
-        'is_online': new_status,
-        'message': 'Đã ' + ('bật' if new_status else 'tắt') + ' trạng thái online'
-    })
 
 @shipper_bp.route('/order/<order_id>/accept', methods=['POST'])
 @login_required
@@ -79,10 +68,6 @@ def accept_order(order_id):
         flash('Tài khoản chưa được duyệt', 'warning')
         return redirect(url_for('shipper.dashboard'))
     
-    if not user.get('is_online'):
-        flash('Vui lòng bật trạng thái online để nhận đơn', 'warning')
-        return redirect(url_for('shipper.dashboard'))
-    
     order = Order.find_by_id(order_id)
     if not order:
         flash('Đơn hàng không tồn tại', 'danger')
@@ -92,8 +77,26 @@ def accept_order(order_id):
         flash('Đơn hàng đã được nhận bởi shipper khác', 'warning')
         return redirect(url_for('shipper.dashboard'))
     
-    # Accept order
-    Order.update_status(order_id, 'preparing', str(user['_id']))
+    # Check if order is in preparing status (đã được chủ nhà hàng chấp nhận)
+    if order.get('status') != 'preparing':
+        flash('Đơn hàng chưa được chủ nhà hàng chấp nhận', 'warning')
+        return redirect(url_for('shipper.dashboard'))
+    
+    # Accept order - chuyển sang delivering (shipper đang giao)
+    Order.update_status(order_id, 'delivering', str(user['_id']))
+    
+    # Nếu thanh toán bằng tiền mặt, tính doanh thu cho chủ nhà hàng và admin khi shipper nhận đơn
+    payment = get_db().payments.find_one({'order_id': ObjectId(order_id)})
+    if payment and payment.get('method') == 'cash' and payment.get('status') == 'pending':
+        # Cập nhật payment status thành success
+        get_db().payments.update_one(
+            {'_id': payment['_id']},
+            {'$set': {'status': 'success', 'paid_at': datetime.now()}}
+        )
+        
+        # Tính và cập nhật doanh thu
+        from app.utils.revenue import calculate_and_update_revenue
+        calculate_and_update_revenue(order_id)
     
     flash('Đã nhận đơn hàng thành công', 'success')
     return redirect(url_for('shipper.order_detail', order_id=order_id))
@@ -134,9 +137,13 @@ def update_order_status(order_id):
         return redirect(url_for('shipper.dashboard'))
     
     new_status = request.form.get('status')
-    valid_statuses = ['preparing', 'delivering', 'delivered']
     
-    if new_status not in valid_statuses:
+    # Chỉ cho phép chuyển từ delivering sang delivered
+    if order.get('status') != 'delivering':
+        flash('Chỉ có thể cập nhật trạng thái khi đang giao hàng', 'warning')
+        return redirect(url_for('shipper.order_detail', order_id=order_id))
+    
+    if new_status != 'delivered':
         flash('Trạng thái không hợp lệ', 'danger')
         return redirect(url_for('shipper.order_detail', order_id=order_id))
     

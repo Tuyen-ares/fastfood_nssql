@@ -4,9 +4,14 @@
 
 {% block content %}
 <div class="container my-5">
-    <h2 class="mb-4">Xin chào, {{ user.get('name', 'Chủ nhà hàng') }}!</h2>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Xin chào, {{ user.get('name', 'Chủ nhà hàng') }}!</h2>
+        <a href="{{ url_for('restaurant.register') }}" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Đăng ký nhà hàng mới
+        </a>
+    </div>
     
-    {% if not restaurant %}
+    {% if not restaurants or restaurants|length == 0 %}
     <div class="alert alert-warning">
         <h5>Bạn chưa có nhà hàng nào</h5>
         <p>Vui lòng đăng ký nhà hàng để bắt đầu sử dụng hệ thống.</p>
@@ -14,14 +19,36 @@
     </div>
     {% else %}
     
+    <!-- Restaurant Selection Tabs -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title mb-3">Chọn nhà hàng để quản lý</h5>
+            <ul class="nav nav-tabs" role="tablist">
+                {% for rest in restaurants %}
+                <li class="nav-item" role="presentation">
+                    <a class="nav-link {% if selected_rest_id_str and rest._id_str == selected_rest_id_str %}active{% endif %}" 
+                       href="{{ url_for('restaurant.dashboard', rest_id=rest._id) }}">
+                        {{ rest.get('name', 'N/A') }}
+                        <span class="badge bg-{{ 'success' if rest.get('status') == 'approved' else 'warning' if rest.get('status') == 'pending' else 'danger' }} ms-1">
+                            {{ rest.get('status', 'N/A') }}
+                        </span>
+                    </a>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    
+    {% if restaurant %}
+    
     {# Thông báo trạng thái nhà hàng #}
     {% if restaurant.get('status') == 'pending' %}
     <div class="alert alert-warning">
-        <i class="bi bi-hourglass-split"></i> Nhà hàng của bạn đang chờ admin duyệt.
+        <i class="bi bi-hourglass-split"></i> Nhà hàng "{{ restaurant.get('name') }}" đang chờ admin duyệt.
     </div>
     {% elif restaurant.get('status') == 'banned' %}
     <div class="alert alert-danger">
-        <i class="bi bi-x-circle"></i> Nhà hàng của bạn đã bị khóa. Vui lòng liên hệ admin.
+        <i class="bi bi-x-circle"></i> Nhà hàng "{{ restaurant.get('name') }}" đã bị khóa. Vui lòng liên hệ admin.
     </div>
     {% endif %}
     
@@ -67,7 +94,7 @@
             <div class="card border-primary">
                 <div class="card-body">
                     <h5 class="card-title text-primary">
-                        <i class="bi bi-cash-stack"></i> Doanh thu (95% trên mỗi đơn hàng)
+                        <i class="bi bi-cash-stack"></i> Doanh thu tổng (95% trên mỗi đơn hàng của tất cả nhà hàng)
                     </h5>
                     <h2 class="text-primary mb-2">{{ "{:,.0f}".format(stats.get('revenue', 0)) }} đ</h2>
                     <div class="alert alert-info mb-0">
@@ -84,8 +111,7 @@
         <div class="col-md-12">
             <div class="card">
                 <div class="card-body">
-                    <h5 class="card-title">Thông tin nhà hàng</h5>
-                    <p><strong>Tên:</strong> {{ restaurant.get('name', 'N/A') }}</p>
+                    <h5 class="card-title">Thông tin nhà hàng: {{ restaurant.get('name', 'N/A') }}</h5>
                     <p><strong>Địa chỉ:</strong> {{ restaurant.get('addr', 'N/A') }}</p>
                     <p><strong>Giờ mở cửa:</strong> {{ restaurant.get('open', 'N/A') }} - {{ restaurant.get('close', 'N/A') }}</p>
                     <p><strong>Trạng thái:</strong> 
@@ -94,13 +120,16 @@
                         </span>
                     </p>
                     <div class="mt-3">
-                        <a href="{{ url_for('restaurant.edit') }}" class="btn btn-primary">
+                        <a href="{{ url_for('restaurant.edit', rest_id=restaurant._id) }}" class="btn btn-primary">
                             <i class="bi bi-pencil"></i> Chỉnh sửa thông tin
                         </a>
-                        <a href="{{ url_for('restaurant.menus') }}" class="btn btn-success">
+                        <a href="{{ url_for('restaurant.menus', rest_id=restaurant._id) }}" class="btn btn-success">
                             <i class="bi bi-list-ul"></i> Quản lý món ăn
                         </a>
-                        <a href="{{ url_for('restaurant.orders') }}" class="btn btn-info">
+                        <a href="{{ url_for('restaurant.vouchers', rest_id=restaurant._id) }}" class="btn btn-warning">
+                            <i class="bi bi-ticket-perforated"></i> Quản lý voucher
+                        </a>
+                        <a href="{{ url_for('restaurant.orders', rest_id=restaurant._id) }}" class="btn btn-info">
                             <i class="bi bi-cart"></i> Xem đơn hàng
                         </a>
                     </div>
@@ -110,7 +139,7 @@
     </div>
     
     <!-- Recent Orders -->
-    <h3 class="mb-3">Đơn hàng gần đây</h3>
+    <h3 class="mb-3">Đơn hàng gần đây - {{ restaurant.get('name', 'N/A') }}</h3>
     {% if orders %}
         <div class="table-responsive">
             <table class="table table-striped">
@@ -135,7 +164,7 @@
                         </td>
                         <td>{{ order.get('created_at').strftime('%d/%m/%Y %H:%M') if order.get('created_at') else 'N/A' }}</td>
                         <td>
-                            <a href="{{ url_for('restaurant.orders') }}" class="btn btn-sm btn-info">Xem chi tiết</a>
+                            <a href="{{ url_for('restaurant.orders', rest_id=restaurant._id) }}" class="btn btn-sm btn-info">Xem chi tiết</a>
                         </td>
                     </tr>
                     {% endfor %}
@@ -146,7 +175,12 @@
         <p class="text-muted">Chưa có đơn hàng nào</p>
     {% endif %}
     
+    {% else %}
+    <div class="alert alert-info">
+        <i class="bi bi-info-circle"></i> Vui lòng chọn một nhà hàng từ danh sách ở trên để xem thông tin chi tiết.
+    </div>
+    {% endif %}
+    
     {% endif %}
 </div>
 {% endblock %}
-

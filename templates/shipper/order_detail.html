@@ -5,12 +5,29 @@
 {% block content %}
 <div class="container my-5">
     <div class="row">
+<<<<<<< Updated upstream
         <div class="col-md-12">
             <h2 class="mb-4">Chi tiết Đơn hàng</h2>
             
             <div class="card mb-3">
                 <div class="card-header">
                     <h5>Thông tin đơn hàng</h5>
+=======
+        <div class="col-lg-8">
+            <div class="detail-card">
+                <div class="detail-header">
+                    <span><i class="bi bi-geo-alt-fill text-danger me-2"></i>Lộ trình giao hàng</span>
+                    <span
+                        class="badge bg-{{ 'warning' if order.get('status') == 'pending' else 'info' if order.get('status') == 'preparing' else 'primary' if order.get('status') == 'delivering' else 'warning' if order.get('status') == 'delivered' else 'success' if order.get('status') == 'completed' else 'danger' }}">
+                        {% if order.get('status') == 'delivered' %}
+                        CHỜ XÁC NHẬN TỪ KHÁCH HÀNG
+                        {% elif order.get('status') == 'completed' %}
+                        HOÀN TẤT
+                        {% else %}
+                        {{ order.get('status', 'N/A')|upper }}
+                        {% endif %}
+                    </span>
+>>>>>>> Stashed changes
                 </div>
                 <div class="card-body">
                     <div class="row">
@@ -106,6 +123,7 @@
                     </div>
                 </div>
             </div>
+<<<<<<< Updated upstream
             
             {% if order.get('status') != 'delivered' %}
             <div class="card mb-3">
@@ -113,6 +131,27 @@
                     <h5>Cập nhật trạng thái</h5>
                 </div>
                 <div class="card-body">
+=======
+        </div>
+
+        <div class="col-lg-4">
+            {% if order.get('status') == 'delivered' %}
+            <div class="detail-card bg-warning bg-opacity-10 border-warning border text-center p-4">
+                <i class="bi bi-clock-history text-warning display-4 mb-3"></i>
+                <h5 class="text-warning fw-bold">Chờ xác nhận từ khách hàng</h5>
+                <p class="text-muted small">Đơn hàng đã được giao. Đang chờ khách hàng xác nhận nhận hàng.</p>
+            </div>
+            {% elif order.get('status') == 'completed' %}
+            <div class="detail-card bg-light border text-center p-4">
+                <i class="bi bi-check-circle-fill text-success display-4 mb-3"></i>
+                <h5 class="text-success fw-bold">Đơn hàng đã hoàn tất</h5>
+                <p class="text-muted small">Cảm ơn bạn đã giao hàng chăm chỉ!</p>
+            </div>
+            {% elif order.get('status') != 'cancelled' %}
+            <div class="detail-card action-card">
+                <div class="card-body p-4 text-center">
+                    <h5 class="fw-bold mb-3">Cập nhật trạng thái</h5>
+>>>>>>> Stashed changes
                     <form method="POST" action="{{ url_for('shipper.update_order_status', order_id=order._id) }}">
                         <div class="mb-3">
                             <label for="status" class="form-label">Trạng thái mới</label>

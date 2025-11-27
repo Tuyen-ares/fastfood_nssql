@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash, jsonify, current_app, url_for as flask_url_for
-from app.models import Restaurant, Menu, Order, Payment, User, Review
+from app.models import Restaurant, Menu, Order, Payment, User, Review, Voucher
 from app.utils.auth import login_required, get_current_user
 from app.utils.helpers import to_object_id, format_currency, paginate
 from app.utils.vnpay import VnPay
@@ -511,7 +511,7 @@ def checkout():
         rest_id = request.form.get('rest_id')
         delivery_address = request.form.get('delivery_address')
         payment_method = request.form.get('payment_method')
-        promotion_code = request.form.get('promotion_code', '')
+        voucher_code = request.form.get('voucher_code', '').strip().upper()
         
         if not all([rest_id, delivery_address, payment_method]):
             flash('Vui lòng nhập đầy đủ thông tin', 'danger')
@@ -519,7 +519,8 @@ def checkout():
         
         # Build order items
         items = []
-        total = 0
+        subtotal = 0
+        cart_items_for_voucher = []
         for menu_id, quantity in cart.items():
             menu = Menu.find_by_id(menu_id)
             if menu:
@@ -530,19 +531,79 @@ def checkout():
                     'quantity': quantity,
                     'price': menu['price']
                 })
-                total += item_total
+                cart_items_for_voucher.append({
+                    'menu_id': menu_id,
+                    'quantity': quantity
+                })
+                subtotal += item_total
         
         delivery_fee = 15000  # Fixed delivery fee
+        discount_amount = 0
+        final_subtotal = subtotal
+        final_delivery_fee = delivery_fee
+        voucher_id = None
+        
+        # Validate and apply voucher if provided
+        if voucher_code:
+            voucher = Voucher.find_by_code(voucher_code, rest_id)
+            if not voucher:
+                flash('Mã voucher không hợp lệ hoặc không tồn tại', 'danger')
+                return redirect(url_for('customer.checkout'))
+            
+            if voucher.get('status') != 'active':
+                flash('Voucher đã ngừng hoạt động', 'danger')
+                return redirect(url_for('customer.checkout'))
+            
+            if voucher.get('quantity', 0) <= 0:
+                flash('Voucher đã hết số lượng sử dụng', 'danger')
+                return redirect(url_for('customer.checkout'))
+            
+            # Check date validity
+            now = datetime.now()
+            if voucher.get('start_date') and voucher.get('start_date') > now:
+                flash('Voucher chưa đến thời gian sử dụng', 'danger')
+                return redirect(url_for('customer.checkout'))
+            
+            if voucher.get('end_date') and voucher.get('end_date') < now:
+                flash('Voucher đã hết hạn', 'danger')
+                return redirect(url_for('customer.checkout'))
+            
+            # Check min_order_quantity
+            total_quantity = sum(item.get('quantity', 0) for item in cart_items_for_voucher)
+            if voucher.get('min_order_quantity', 0) > 0 and total_quantity < voucher.get('min_order_quantity'):
+                flash(f'Voucher yêu cầu mua tối thiểu {voucher.get("min_order_quantity")} món', 'danger')
+                return redirect(url_for('customer.checkout'))
+            
+            # Check applicable_menu_ids
+            applicable_menu_ids = voucher.get('applicable_menu_ids', [])
+            if applicable_menu_ids:
+                cart_menu_ids = [ObjectId(item['menu_id']) for item in cart_items_for_voucher]
+                applicable_ids = [ObjectId(mid) if not isinstance(mid, ObjectId) else mid for mid in applicable_menu_ids]
+                if not any(mid in applicable_ids for mid in cart_menu_ids):
+                    flash('Voucher không áp dụng cho các món trong giỏ hàng', 'danger')
+                    return redirect(url_for('customer.checkout'))
+            
+            # Apply voucher
+            voucher_result = Voucher.apply_voucher(voucher, subtotal, delivery_fee)
+            discount_amount = voucher_result['discount_amount']
+            final_subtotal = voucher_result['final_subtotal']
+            final_delivery_fee = voucher_result['final_delivery_fee']
+            voucher_id = str(voucher['_id'])
+        
+        final_total = final_subtotal + final_delivery_fee
         
         # Create order
         order_data = {
             'user_id': str(user['_id']),
             'rest_id': rest_id,
             'items': items,
-            'total': total + delivery_fee,
-            'delivery_fee': delivery_fee,
+            'subtotal': subtotal,
+            'discount_amount': discount_amount,
+            'total': final_total,
+            'delivery_fee': final_delivery_fee,
             'delivery_address': delivery_address,
-            'promotion_code': promotion_code if promotion_code else None,
+            'voucher_id': voucher_id,
+            'voucher_code': voucher_code if voucher_code else None,
             'status': 'pending',
             'shipper_id': None
         }
@@ -550,29 +611,34 @@ def checkout():
         order_id = Order.create(order_data)
         order_id_str = str(order_id)  # Convert ObjectId to string ngay từ đầu
         
+        # Use voucher (decrease quantity)
+        if voucher_id:
+            Voucher.use_voucher(voucher_id)
+        
         # Create payment
         payment_data = {
             'order_id': order_id_str,
             'method': payment_method,
-            'amount': total + delivery_fee,
+            'amount': final_total,
             'status': 'pending' if payment_method != 'cash' else 'success',
             'paid_at': None
         }
         
         if payment_method == 'cash':
-            payment_data['paid_at'] = datetime.now()
+            # Với thanh toán tiền mặt, payment status = pending
+            # Doanh thu chỉ được tính khi shipper nhận đơn
+            payment_data['status'] = 'pending'
+            payment_data['paid_at'] = None
             Payment.create(payment_data)
             
-            # Tính và cập nhật doanh thu cho admin (5%) và restaurant (95%)
-            from app.utils.revenue import calculate_and_update_revenue
-            calculate_and_update_revenue(order_id_str)
+            # KHÔNG tính doanh thu ngay, sẽ tính khi shipper nhận đơn
             
             # Clear cart (cả session và database)
             user = get_current_user()
             session['cart'] = {}
             session.modified = True
             User.save_cart(str(user['_id']), {})
-            flash('Đặt hàng thành công!', 'success')
+            flash('Đặt hàng thành công! Vui lòng chờ chủ nhà hàng chấp nhận đơn.', 'success')
             return redirect(url_for('customer.order_detail', order_id=order_id_str))
         
         elif payment_method == 'vnpay':
@@ -611,7 +677,7 @@ def checkout():
                 try:
                     payment_url = vnpay.create_payment_url(
                         order_id=order_id_str,
-                        amount=total + delivery_fee,
+                        amount=final_total,
                         order_info=order_info
                     )
                 except Exception as e:
@@ -661,6 +727,7 @@ def checkout():
     # Build cart items for display
     cart_items = []
     subtotal = 0
+    cart_items_for_voucher = []
     for menu_id, quantity in cart.items():
         menu = Menu.find_by_id(menu_id)
         if menu:
@@ -670,7 +737,20 @@ def checkout():
                 'quantity': quantity,
                 'total': item_total
             })
+            cart_items_for_voucher.append({
+                'menu_id': menu_id,
+                'quantity': quantity
+            })
             subtotal += item_total
+    
+    # Get available vouchers for this cart
+    available_vouchers = []
+    if restaurant:
+        available_vouchers = Voucher.find_available_for_cart(
+            str(restaurant['_id']),
+            cart_items_for_voucher,
+            subtotal
+        )
     
     delivery_fee = 15000
     total = subtotal + delivery_fee
@@ -680,7 +760,8 @@ def checkout():
                          cart_items=cart_items,
                          subtotal=subtotal,
                          delivery_fee=delivery_fee,
-                         total=total)
+                         total=total,
+                         available_vouchers=available_vouchers)
 
 @customer_bp.route('/payment/vnpay_return')
 @login_required

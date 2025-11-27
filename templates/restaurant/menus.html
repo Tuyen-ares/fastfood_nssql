@@ -6,10 +6,31 @@
 <div class="container my-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2>Quản lý Món ăn</h2>
-        <a href="{{ url_for('restaurant.add_menu') }}" class="btn btn-primary">
+        <a href="{{ url_for('restaurant.add_menu', rest_id=restaurant._id if restaurant else '') }}" class="btn btn-primary">
             <i class="bi bi-plus-circle"></i> Thêm món ăn
         </a>
     </div>
+    
+    {% if restaurants and restaurants|length > 1 %}
+    <div class="card mb-3">
+        <div class="card-body">
+            <label class="form-label"><strong>Chọn nhà hàng:</strong></label>
+            <select class="form-select" onchange="window.location.href='{{ url_for('restaurant.menus') }}?rest_id=' + this.value">
+                {% for rest in restaurants %}
+                <option value="{{ rest._id }}" {% if selected_rest_id_str and rest._id_str == selected_rest_id_str %}selected{% endif %}>
+                    {{ rest.get('name', 'N/A') }} - {{ rest.get('addr', 'N/A') }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+    {% endif %}
+    
+    {% if restaurant %}
+    <div class="alert alert-info mb-3">
+        <i class="bi bi-info-circle"></i> Đang quản lý món ăn của: <strong>{{ restaurant.get('name', 'N/A') }}</strong>
+    </div>
+    {% endif %}
     
     <div class="card">
         <div class="card-body">
@@ -65,7 +86,14 @@
                             {% endfor %}
                         {% else %}
                             <tr>
-                                <td colspan="6" class="text-center text-muted">Chưa có món ăn nào. <a href="{{ url_for('restaurant.add_menu') }}">Thêm món ăn ngay!</a></td>
+                                <td colspan="6" class="text-center text-muted">
+                                    Chưa có món ăn nào. 
+                                    {% if restaurant %}
+                                    <a href="{{ url_for('restaurant.add_menu', rest_id=restaurant._id) }}">Thêm món ăn ngay!</a>
+                                    {% else %}
+                                    Vui lòng chọn nhà hàng ở trên.
+                                    {% endif %}
+                                </td>
                             </tr>
                         {% endif %}
                     </tbody>
@@ -75,7 +103,7 @@
     </div>
     
     <div class="mt-3">
-        <a href="{{ url_for('restaurant.dashboard') }}" class="btn btn-secondary">
+        <a href="{{ url_for('restaurant.dashboard', rest_id=restaurant._id if restaurant else '') }}" class="btn btn-secondary">
             <i class="bi bi-arrow-left"></i> Quay lại Dashboard
         </a>
     </div>

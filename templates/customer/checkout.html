@@ -24,8 +24,34 @@
                         
                         <!-- Mã giảm giá -->
                         <div class="mb-3">
-                            <label for="promotion_code" class="form-label">Mã giảm giá (nếu có)</label>
-                            <input type="text" class="form-control" id="promotion_code" name="promotion_code" placeholder="Nhập mã giảm giá">
+                            <label for="voucher_code" class="form-label">Mã giảm giá (nếu có)</label>
+                            <select class="form-select" id="voucher_code" name="voucher_code" onchange="applyVoucher()">
+                                <option value="">-- Chọn mã giảm giá --</option>
+                                {% if available_vouchers %}
+                                    {% for voucher in available_vouchers %}
+                                    <option value="{{ voucher.get('code', '') }}" 
+                                            data-type="{{ voucher.get('type', '') }}"
+                                            data-discount-type="{{ voucher.get('discount_type', '') }}"
+                                            data-value="{{ voucher.get('value', 0) }}"
+                                            data-min-quantity="{{ voucher.get('min_order_quantity', 0) }}">
+                                        {{ voucher.get('code', '') }} - 
+                                        {% if voucher.get('type') == 'discount' %}
+                                            {% if voucher.get('discount_type') == 'percent' %}
+                                                Giảm {{ voucher.get('value', 0) }}%
+                                            {% else %}
+                                                Giảm {{ "{:,.0f}".format(voucher.get('value', 0)) }} đ
+                                            {% endif %}
+                                        {% else %}
+                                            Miễn phí ship
+                                        {% endif %}
+                                        {% if voucher.get('min_order_quantity', 0) > 0 %}
+                                            (Mua tối thiểu {{ voucher.get('min_order_quantity') }} món)
+                                        {% endif %}
+                                    </option>
+                                    {% endfor %}
+                                {% endif %}
+                            </select>
+                            <small class="form-text text-muted">Chọn mã giảm giá từ danh sách hoặc để trống nếu không có</small>
                         </div>
                         
                         <!-- Phương thức thanh toán -->
@@ -92,26 +118,88 @@
                     
                     <div class="d-flex justify-content-between mb-2">
                         <span>Tạm tính:</span>
-                        <span>{{ "{:,.0f}".format(subtotal) }} đ</span>
+                        <span id="display_subtotal">{{ "{:,.0f}".format(subtotal) }} đ</span>
                     </div>
                     <div class="d-flex justify-content-between mb-2">
                         <span>Phí giao hàng:</span>
-                        <span>{{ "{:,.0f}".format(delivery_fee) }} đ</span>
+                        <span id="display_delivery_fee">{{ "{:,.0f}".format(delivery_fee) }} đ</span>
                     </div>
-                    <div class="d-flex justify-content-between mb-2">
+                    <div class="d-flex justify-content-between mb-2" id="discount_row" style="display: none;">
                         <span>Giảm giá:</span>
-                        <span>0 đ</span>
+                        <span class="text-success" id="display_discount">0 đ</span>
                     </div>
                     <hr>
                     <div class="d-flex justify-content-between">
                         <strong>Tổng cộng:</strong>
-                        <strong class="text-primary">{{ "{:,.0f}".format(total) }} đ</strong>
+                        <strong class="text-primary" id="display_total">{{ "{:,.0f}".format(total) }} đ</strong>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+const subtotal = {{ subtotal }};
+const deliveryFee = {{ delivery_fee }};
+
+function formatCurrency(amount) {
+    return new Intl.NumberFormat('vi-VN').format(Math.round(amount)) + ' đ';
+}
+
+function applyVoucher() {
+    const voucherSelect = document.getElementById('voucher_code');
+    const selectedOption = voucherSelect.options[voucherSelect.selectedIndex];
+    
+    if (!selectedOption.value) {
+        // No voucher selected
+        document.getElementById('display_subtotal').textContent = formatCurrency(subtotal);
+        document.getElementById('display_delivery_fee').textContent = formatCurrency(deliveryFee);
+        document.getElementById('display_discount').textContent = '0 đ';
+        document.getElementById('discount_row').style.display = 'none';
+        document.getElementById('display_total').textContent = formatCurrency(subtotal + deliveryFee);
+        return;
+    }
+    
+    const voucherType = selectedOption.getAttribute('data-type');
+    const discountType = selectedOption.getAttribute('data-discount-type');
+    const value = parseFloat(selectedOption.getAttribute('data-value'));
+    
+    let discountAmount = 0;
+    let finalSubtotal = subtotal;
+    let finalDeliveryFee = deliveryFee;
+    
+    if (voucherType === 'discount') {
+        // Discount on items
+        if (discountType === 'percent') {
+            discountAmount = subtotal * (value / 100);
+        } else {
+            discountAmount = Math.min(value, subtotal);
+        }
+        finalSubtotal = Math.max(0, subtotal - discountAmount);
+        finalDeliveryFee = deliveryFee;
+    } else if (voucherType === 'free_ship') {
+        // Free shipping
+        discountAmount = deliveryFee;
+        finalSubtotal = subtotal;
+        finalDeliveryFee = 0;
+    }
+    
+    const finalTotal = finalSubtotal + finalDeliveryFee;
+    
+    // Update display
+    document.getElementById('display_subtotal').textContent = formatCurrency(finalSubtotal);
+    document.getElementById('display_delivery_fee').textContent = formatCurrency(finalDeliveryFee);
+    document.getElementById('display_discount').textContent = '-' + formatCurrency(discountAmount);
+    document.getElementById('discount_row').style.display = 'flex';
+    document.getElementById('display_total').textContent = formatCurrency(finalTotal);
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    applyVoucher();
+});
+</script>
 
 {% endblock %}
 

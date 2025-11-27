@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+
+{% block title %}{{ 'Sửa' if voucher else 'Thêm' }} Voucher{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card">
+                <div class="card-header">
+                    <h3>{{ 'Sửa' if voucher else 'Thêm' }} Voucher</h3>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        {% if not voucher and restaurants and restaurants|length > 1 %}
+                        <div class="mb-3">
+                            <label for="rest_id" class="form-label">Nhà hàng <span class="text-danger">*</span></label>
+                            <select class="form-select" id="rest_id" name="rest_id" required>
+                                {% for rest in restaurants %}
+                                <option value="{{ rest._id }}" {% if selected_rest_id_str and rest._id_str == selected_rest_id_str %}selected{% endif %}>
+                                    {{ rest.get('name', 'N/A') }} - {{ rest.get('addr', 'N/A') }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        {% else %}
+                        <input type="hidden" name="rest_id" value="{{ restaurant._id if restaurant else '' }}">
+                        {% endif %}
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="code" class="form-label">Mã voucher <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="code" name="code" 
+                                           value="{{ voucher.get('code', '') if voucher else '' }}" 
+                                           required placeholder="VD: GIAM10" style="text-transform: uppercase;">
+                                    <small class="form-text text-muted">Mã sẽ được chuyển thành chữ in hoa</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="status" class="form-label">Trạng thái <span class="text-danger">*</span></label>
+                                    <select class="form-select" id="status" name="status" required>
+                                        <option value="active" {% if not voucher or voucher.get('status') == 'active' %}selected{% endif %}>Đang hoạt động</option>
+                                        <option value="inactive" {% if voucher and voucher.get('status') == 'inactive' %}selected{% endif %}>Ngừng hoạt động</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="type" class="form-label">Loại voucher <span class="text-danger">*</span></label>
+                                    <select class="form-select" id="type" name="type" required onchange="updateDiscountType()">
+                                        <option value="discount" {% if not voucher or voucher.get('type') == 'discount' %}selected{% endif %}>Giảm giá món ăn</option>
+                                        <option value="free_ship" {% if voucher and voucher.get('type') == 'free_ship' %}selected{% endif %}>Miễn phí ship</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3" id="discount_type_group">
+                                    <label for="discount_type" class="form-label">Kiểu giảm giá <span class="text-danger">*</span></label>
+                                    <select class="form-select" id="discount_type" name="discount_type" required>
+                                        <option value="percent" {% if not voucher or voucher.get('discount_type') == 'percent' %}selected{% endif %}>Theo phần trăm (%)</option>
+                                        <option value="amount" {% if voucher and voucher.get('discount_type') == 'amount' %}selected{% endif %}>Theo số tiền (VND)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="value" class="form-label">Giá trị <span class="text-danger">*</span></label>
+                                    <input type="number" step="0.01" class="form-control" id="value" name="value" 
+                                           value="{{ voucher.get('value', '') if voucher else '' }}" 
+                                           required min="0" placeholder="VD: 10 hoặc 20000">
+                                    <small class="form-text text-muted" id="value_hint">
+                                        {% if voucher and voucher.get('type') == 'free_ship' %}
+                                            Số tiền ship (thường là 15000)
+                                        {% elif voucher and voucher.get('discount_type') == 'percent' %}
+                                            Phần trăm giảm (VD: 10 = 10%)
+                                        {% else %}
+                                            Số tiền giảm (VD: 20000)
+                                        {% endif %}
+                                    </small>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="quantity" class="form-label">Số lượng <span class="text-danger">*</span></label>
+                                    <input type="number" class="form-control" id="quantity" name="quantity" 
+                                           value="{{ voucher.get('quantity', '') if voucher else '' }}" 
+                                           required min="1" placeholder="Số lần sử dụng">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="min_order_quantity" class="form-label">Số lượng đơn tối thiểu</label>
+                                    <input type="number" class="form-control" id="min_order_quantity" name="min_order_quantity" 
+                                           value="{{ voucher.get('min_order_quantity', 0) if voucher else '0' }}" 
+                                           min="0" placeholder="0 = không giới hạn">
+                                    <small class="form-text text-muted">Khách phải mua tối thiểu bao nhiêu món để áp dụng</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="start_date" class="form-label">Ngày bắt đầu</label>
+                                    <input type="datetime-local" class="form-control" id="start_date" name="start_date" 
+                                           value="{% if voucher and voucher.get('start_date') %}{{ voucher.get('start_date').strftime('%Y-%m-%dT%H:%M') }}{% endif %}">
+                                    <small class="form-text text-muted">Để trống = không giới hạn</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="end_date" class="form-label">Ngày kết thúc</label>
+                                    <input type="datetime-local" class="form-control" id="end_date" name="end_date" 
+                                           value="{% if voucher and voucher.get('end_date') %}{{ voucher.get('end_date').strftime('%Y-%m-%dT%H:%M') }}{% endif %}">
+                                    <small class="form-text text-muted">Để trống = không giới hạn</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Áp dụng cho món ăn</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="apply_all" 
+                                       {% if not voucher or not voucher.get('applicable_menu_ids') or voucher.get('applicable_menu_ids')|length == 0 %}checked{% endif %}
+                                       onchange="toggleMenuSelection()">
+                                <label class="form-check-label" for="apply_all">
+                                    Áp dụng cho tất cả món ăn
+                                </label>
+                            </div>
+                            <div id="menu_selection" style="max-height: 200px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; margin-top: 10px; border-radius: 4px;">
+                                {% for menu in menus %}
+                                <div class="form-check">
+                                    <input class="form-check-input menu-checkbox" type="checkbox" 
+                                           name="applicable_menu_ids" value="{{ menu._id }}" 
+                                           id="menu_{{ menu._id }}"
+                                           {% if voucher and voucher.get('applicable_menu_ids') and menu._id in voucher.get('applicable_menu_ids') %}checked{% endif %}>
+                                    <label class="form-check-label" for="menu_{{ menu._id }}">
+                                        {{ menu.get('name', 'N/A') }} - {{ "{:,.0f}".format(menu.get('price', 0)) }} đ
+                                    </label>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            <small class="form-text text-muted">Nếu không chọn món nào, voucher sẽ áp dụng cho tất cả món</small>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">{{ 'Cập nhật' if voucher else 'Thêm' }}</button>
+                        <a href="{{ url_for('restaurant.vouchers', rest_id=restaurant._id if restaurant else '') }}" class="btn btn-secondary">Hủy</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function updateDiscountType() {
+    const type = document.getElementById('type').value;
+    const discountTypeGroup = document.getElementById('discount_type_group');
+    const valueHint = document.getElementById('value_hint');
+    
+    if (type === 'free_ship') {
+        discountTypeGroup.style.display = 'none';
+        valueHint.textContent = 'Số tiền ship (thường là 15000)';
+    } else {
+        discountTypeGroup.style.display = 'block';
+        const discountType = document.getElementById('discount_type').value;
+        if (discountType === 'percent') {
+            valueHint.textContent = 'Phần trăm giảm (VD: 10 = 10%)';
+        } else {
+            valueHint.textContent = 'Số tiền giảm (VD: 20000)';
+        }
+    }
+}
+
+function toggleMenuSelection() {
+    const applyAll = document.getElementById('apply_all').checked;
+    const checkboxes = document.querySelectorAll('.menu-checkbox');
+    checkboxes.forEach(cb => {
+        cb.disabled = applyAll;
+        if (applyAll) {
+            cb.checked = false;
+        }
+    });
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    updateDiscountType();
+    toggleMenuSelection();
+    
+    // Update hint when discount type changes
+    document.getElementById('discount_type').addEventListener('change', function() {
+        updateDiscountType();
+    });
+});
+</script>
+{% endblock %}
+

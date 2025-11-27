@@ -11,6 +11,25 @@
                     <h3>Chỉnh sửa Thông tin Nhà hàng</h3>
                 </div>
                 <div class="card-body">
+                    {% if restaurants and restaurants|length > 1 %}
+                    <div class="alert alert-info mb-3">
+                        <label class="form-label"><strong>Chọn nhà hàng để chỉnh sửa:</strong></label>
+                        <select class="form-select" onchange="window.location.href='{{ url_for('restaurant.edit') }}?rest_id=' + this.value">
+                            {% for rest in restaurants %}
+                            <option value="{{ rest._id }}" {% if selected_rest_id_str and rest._id_str == selected_rest_id_str %}selected{% endif %}>
+                                {{ rest.get('name', 'N/A') }} - {{ rest.get('addr', 'N/A') }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    {% endif %}
+                    
+                    {% if restaurant and restaurant.get('status') != 'approved' %}
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle"></i> Chỉ có thể chỉnh sửa nhà hàng đã được duyệt.
+                    </div>
+                    {% endif %}
+                    
                     <form method="POST">
                         <div class="mb-3">
                             <label for="name" class="form-label">Tên nhà hàng <span class="text-danger">*</span></label>
@@ -44,8 +63,18 @@
                                        placeholder="VD: 106.6995">
                             </div>
                         </div>
-                        <button type="submit" class="btn btn-primary">Cập nhật</button>
-                        <a href="{{ url_for('restaurant.dashboard') }}" class="btn btn-secondary">Hủy</a>
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">Cập nhật</button>
+                            <a href="{{ url_for('restaurant.dashboard', rest_id=restaurant._id if restaurant else '') }}" class="btn btn-secondary">Hủy</a>
+                            {% if restaurant and restaurant.get('status') == 'approved' %}
+                            <form method="POST" action="{{ url_for('restaurant.delete_restaurant', rest_id=restaurant._id) }}" class="ms-auto" 
+                                  onsubmit="return confirm('Bạn có chắc chắn muốn xóa nhà hàng này? Tất cả món ăn và voucher sẽ bị xóa.')">
+                                <button type="submit" class="btn btn-danger">
+                                    <i class="bi bi-trash"></i> Xóa nhà hàng
+                                </button>
+                            </form>
+                            {% endif %}
+                        </div>
                     </form>
                 </div>
             </div>

@@ -1,0 +1,184 @@
+{% extends "base.html" %}
+
+{% block title %}Chi tiết đơn hàng - Nhà hàng{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h2 class="mb-4">Chi tiết đơn hàng</h2>
+    
+    {% if order %}
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Thông tin đơn hàng</h5>
+                    <p><strong>Mã đơn:</strong> #{{ order.get('_id')|string|truncate(8, True, '') }}</p>
+                    <p><strong>Ngày đặt:</strong> {{ order.get('created_at').strftime('%d/%m/%Y %H:%M') if order.get('created_at') else 'N/A' }}</p>
+                    <p><strong>Trạng thái:</strong> 
+                        <span class="badge bg-{{ 'warning' if order.get('status') == 'pending' else 'info' if order.get('status') == 'preparing' else 'primary' if order.get('status') == 'delivering' else 'success' if order.get('status') == 'delivered' or order.get('status') == 'completed' else 'danger' }}">
+                            {% if order.get('status') == 'pending' %}
+                                <i class="bi bi-hourglass-split"></i> Chờ xác nhận
+                            {% elif order.get('status') == 'preparing' %}
+                                <i class="bi bi-clock"></i> Đang chuẩn bị (Chờ shipper)
+                            {% elif order.get('status') == 'delivering' %}
+                                <i class="bi bi-truck"></i> Đang giao hàng
+                            {% elif order.get('status') == 'delivered' %}
+                                <i class="bi bi-check-circle"></i> Đã giao - Chờ khách xác nhận
+                            {% elif order.get('status') == 'completed' %}
+                                <i class="bi bi-check-circle-fill"></i> Đã hoàn thành
+                            {% elif order.get('status') == 'cancelled' %}
+                                <i class="bi bi-x-circle"></i> Đã hủy
+                            {% else %}
+                                {{ order.get('status', 'N/A') }}
+                            {% endif %}
+                        </span>
+                    </p>
+                    {% if order.get('status') == 'pending' and restaurant and restaurant.get('status') == 'approved' %}
+                        <div class="mt-3">
+                            <form method="POST" action="{{ url_for('restaurant.accept_order', order_id=order._id) }}" class="d-inline">
+                                <button type="submit" class="btn btn-success" onclick="return confirm('Bạn có chắc chắn muốn chấp nhận đơn hàng này?')">
+                                    <i class="bi bi-check-circle"></i> Chấp nhận đơn hàng
+                                </button>
+                            </form>
+                            <form method="POST" action="{{ url_for('restaurant.reject_order', order_id=order._id) }}" class="d-inline">
+                                <button type="submit" class="btn btn-danger" onclick="return confirm('Bạn có chắc chắn muốn từ chối đơn hàng này?')">
+                                    <i class="bi bi-x-circle"></i> Từ chối đơn hàng
+                                </button>
+                            </form>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Thông tin khách hàng</h5>
+                    {% if customer %}
+                    <p><strong>Tên:</strong> {{ customer.get('name', 'N/A') }}</p>
+                    <p><strong>Số điện thoại:</strong> {{ customer.get('phone', 'N/A') }}</p>
+                    {% else %}
+                    <p class="text-muted">Không tìm thấy thông tin khách hàng</p>
+                    {% endif %}
+                    <p><strong>Địa chỉ giao hàng:</strong> {{ order.get('delivery_address', 'N/A') }}</p>
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Danh sách món</h5>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Món</th>
+                                <th>Số lượng</th>
+                                <th>Giá</th>
+                                <th>Tổng</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if menu_items %}
+                                {% for item in menu_items %}
+                                <tr>
+                                    <td>{{ item.get('name', 'N/A') }}</td>
+                                    <td>{{ item.get('quantity', 1) }}</td>
+                                    <td>{{ "{:,.0f}".format(item.get('price', 0)) }} đ</td>
+                                    <td>{{ "{:,.0f}".format(item.get('price', 0) * item.get('quantity', 1)) }} đ</td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr><td colspan="4" class="text-muted">Không có món nào</td></tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            {% if shipper %}
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Thông tin tài xế</h5>
+                    <p><strong>Tên:</strong> {{ shipper.get('name', 'N/A') }}</p>
+                    <p><strong>Số điện thoại:</strong> {{ shipper.get('phone', 'N/A') }}</p>
+                    {% if shipper.get('vehicle') %}
+                    <p><strong>Phương tiện:</strong> {{ shipper.get('vehicle', 'N/A') }} - {{ shipper.get('plate', 'N/A') }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Tổng tiền</h5>
+                    {% if order.get('subtotal') %}
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Tạm tính:</span>
+                        <span>{{ "{:,.0f}".format(order.get('subtotal', 0)) }} đ</span>
+                    </div>
+                    {% if order.get('discount_amount', 0) > 0 %}
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Giảm giá:</span>
+                        <span class="text-success">-{{ "{:,.0f}".format(order.get('discount_amount', 0)) }} đ</span>
+                    </div>
+                    {% endif %}
+                    {% endif %}
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Phí giao hàng:</span>
+                        <span>{{ "{:,.0f}".format(order.get('delivery_fee') or 15000) }} đ</span>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between">
+                        <strong>Tổng cộng:</strong>
+                        <strong class="text-primary">{{ "{:,.0f}".format(order.get('total', 0)) }} đ</strong>
+                    </div>
+                    {% if order.get('voucher_code') %}
+                    <div class="mt-2">
+                        <small class="text-muted">Mã giảm giá: <strong>{{ order.get('voucher_code') }}</strong></small>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            {% if payment %}
+            <div class="card mt-3">
+                <div class="card-body">
+                    <h5 class="card-title">Thanh toán</h5>
+                    <p><strong>Phương thức:</strong> 
+                        {% if payment.get('method') == 'cash' %}
+                            <span class="badge bg-info">Thanh toán khi nhận hàng (COD)</span>
+                        {% elif payment.get('method') == 'vnpay' %}
+                            <span class="badge bg-primary">VnPay</span>
+                        {% else %}
+                            {{ payment.get('method', 'N/A') }}
+                        {% endif %}
+                    </p>
+                    <p><strong>Trạng thái:</strong> 
+                        <span class="badge bg-{{ 'success' if payment.get('status') == 'success' else 'warning' }}">
+                            {% if payment.get('status') == 'success' %}
+                                Đã thanh toán
+                            {% else %}
+                                Chờ thanh toán
+                            {% endif %}
+                        </span>
+                    </p>
+                    {% if payment.get('paid_at') %}
+                    <p><strong>Ngày thanh toán:</strong> {{ payment.get('paid_at').strftime('%d/%m/%Y %H:%M') if payment.get('paid_at') else 'N/A' }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+            
+            <div class="mt-3">
+                <a href="{{ url_for('restaurant.orders', rest_id=restaurant._id if restaurant else '') }}" class="btn btn-secondary w-100">Quay lại</a>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="alert alert-danger">
+        Không tìm thấy đơn hàng
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+

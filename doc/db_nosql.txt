@@ -6,7 +6,7 @@ db.users.insertMany([
   { phone: "0901000001", name: "Nam Khách",  password: "nam123",   role: "customer", status: "active", created_at: new Date() },
   { phone: "0901000002", name: "Bé Khách",   password: "be123",    role: "customer", status: "active", created_at: new Date() },
   { phone: "0901000003", name: "Anh Khách",  password: "anh123",   role: "customer", status: "active", created_at: new Date() },
-  { phone: "0888888888", name: "Shipper A",  password: "ship123",  role: "shipper",  status: "active", vehicle: "Wave", plate: "59H1-12345", is_online: false, delivery_stats: { total_orders: 0, completed_orders: 0, cancelled_orders: 0, avg_rating: 0 }, delivery_earnings: 0, created_at: new Date() },
+  { phone: "0888888888", name: "Shipper A",  password: "ship123",  role: "shipper",  status: "active", vehicle: "Wave", plate: "59H1-12345", delivery_stats: { total_orders: 0, completed_orders: 0, cancelled_orders: 0, avg_rating: 0 }, delivery_earnings: 0, created_at: new Date() },
   { phone: "0777777777", name: "Chủ Nhà Hàng A", password: "owner123", role: "restaurant_owner", status: "active", revenue: 0, created_at: new Date() }
 ])
 db.users.createIndex({ phone: 1 }, { unique: true })
@@ -256,9 +256,99 @@ db.reviews.createIndex({ user_id: 1 })
 db.reviews.createIndex({ created_at: -1 })
 print("reviews: 7 đánh giá (chỉ cho đơn hàng đã delivered và có shipper)")
 
-// ============== 8. HOÀN TẤT ==============
+// ============== 8. VOUCHERS (Mã giảm giá) ==============
+// THIẾT KẾ: Voucher thuộc về nhà hàng, có thể giảm giá món ăn hoặc miễn phí ship
+// type: "discount" (giảm giá món) hoặc "free_ship" (miễn phí ship)
+// discount_type: "percent" (giảm theo %) hoặc "amount" (giảm số tiền cố định)
+// min_order_quantity: Số lượng đơn hàng tối thiểu để áp dụng voucher
+// applicable_menu_ids: Danh sách menu_id mà voucher có thể áp dụng (rỗng = áp dụng tất cả)
+let menu_whopper_id = db.menus.findOne({ name: "Whopper Combo" })._id
+let menu_cheese_id = db.menus.findOne({ name: "Cheese Burger" })._id
+let menu_pizza_id = db.menus.findOne({ name: "Pizza Margherita" })._id
+
+db.vouchers.insertMany([
+  {
+    code: "GIAM10",
+    rest_id: rest_ids[0],  // Burger King
+    type: "discount",
+    discount_type: "percent",
+    value: 10,  // Giảm 10%
+    quantity: 100,
+    min_order_quantity: 1,
+    applicable_menu_ids: [],  // Áp dụng tất cả món
+    status: "active",
+    start_date: new Date(now - 7*24*60*60*1000),  // 7 ngày trước
+    end_date: new Date(now + 30*24*60*60*1000),   // 30 ngày sau
+    created_at: new Date(now - 7*24*60*60*1000)
+  },
+  {
+    code: "FREESHIP",
+    rest_id: rest_ids[0],  // Burger King
+    type: "free_ship",
+    discount_type: "amount",
+    value: 15000,  // Miễn phí ship 15000đ
+    quantity: 50,
+    min_order_quantity: 2,  // Phải mua ít nhất 2 món
+    applicable_menu_ids: [],
+    status: "active",
+    start_date: new Date(now - 5*24*60*60*1000),
+    end_date: new Date(now + 20*24*60*60*1000),
+    created_at: new Date(now - 5*24*60*60*1000)
+  },
+  {
+    code: "BURGER20K",
+    rest_id: rest_ids[0],  // Burger King
+    type: "discount",
+    discount_type: "amount",
+    value: 20000,  // Giảm 20,000đ
+    quantity: 30,
+    min_order_quantity: 1,
+    applicable_menu_ids: [menu_whopper_id, menu_cheese_id],  // Chỉ áp dụng cho burger
+    status: "active",
+    start_date: new Date(now - 3*24*60*60*1000),
+    end_date: new Date(now + 15*24*60*60*1000),
+    created_at: new Date(now - 3*24*60*60*1000)
+  },
+  {
+    code: "PIZZA15",
+    rest_id: rest_ids[4],  // Pizza 4P's
+    type: "discount",
+    discount_type: "percent",
+    value: 15,  // Giảm 15%
+    quantity: 25,
+    min_order_quantity: 1,
+    applicable_menu_ids: [menu_pizza_id],  // Chỉ áp dụng cho pizza
+    status: "active",
+    start_date: new Date(now - 2*24*60*60*1000),
+    end_date: new Date(now + 10*24*60*60*1000),
+    created_at: new Date(now - 2*24*60*60*1000)
+  },
+  {
+    code: "SHIPFREE",
+    rest_id: rest_ids[2],  // Lotteria
+    type: "free_ship",
+    discount_type: "amount",
+    value: 15000,
+    quantity: 40,
+    min_order_quantity: 3,  // Phải mua ít nhất 3 món
+    applicable_menu_ids: [],
+    status: "active",
+    start_date: new Date(now - 1*24*60*60*1000),
+    end_date: new Date(now + 25*24*60*60*1000),
+    created_at: new Date(now - 1*24*60*60*1000)
+  }
+])
+
+// Tạo indexes cho vouchers
+db.vouchers.createIndex({ rest_id: 1 })
+db.vouchers.createIndex({ code: 1 })
+db.vouchers.createIndex({ status: 1 })
+db.vouchers.createIndex({ created_at: -1 })
+print("vouchers: 5 mã giảm giá mẫu")
+
+// ============== 9. HOÀN TẤT ==============
 print("\nHOÀN TẤT 100%!")
-print("Tổng: 6 users + 10 restaurants + 10 menus + 10 orders + 10 payments + 7 reviews = 53 document")
+print("Tổng: 6 users + 10 restaurants + 10 menus + 10 orders + 10 payments + 7 reviews + 5 vouchers = 58 document")
 print("\n=== THIẾT KẾ QUAN HỆ ===")
 print("1. 1 Cart (Giỏ hàng) = 1 Order (Đơn hàng)")
 print("   - Khi khách hàng checkout, toàn bộ giỏ hàng được chuyển thành 1 đơn hàng")
@@ -268,6 +358,12 @@ print("   - Mỗi đơn hàng chỉ có 1 thanh toán duy nhất (quan hệ 1-1)
 print("   - Index order_id trong payments là UNIQUE để đảm bảo ràng buộc")
 print("3. 1 Order = 1 Review (Đánh giá)")
 print("   - Mỗi đơn hàng chỉ có thể được đánh giá 1 lần (index order_id UNIQUE)")
+print("4. Voucher (Mã giảm giá)")
+print("   - Voucher thuộc về nhà hàng (rest_id)")
+print("   - Có 2 loại: discount (giảm giá món) và free_ship (miễn phí ship)")
+print("   - Có thể giảm theo % hoặc số tiền cố định")
+print("   - Có thể set điều kiện số lượng đơn hàng tối thiểu (min_order_quantity)")
+print("   - Có thể áp dụng cho món ăn cụ thể (applicable_menu_ids)")
 print("\n=== HỆ THỐNG DOANH THU ===")
 print("1. Admin: revenue (5% trên tổng tiền món của mỗi đơn hàng)")
 print("   - Được cập nhật khi payment status = 'success'")
@@ -287,3 +383,5 @@ print("db.payments.find({order_id: ObjectId('...')}).pretty()  // Xem thanh toá
 print("db.reviews.find({restaurant_id: ObjectId('...')}).pretty()  // Xem đánh giá của nhà hàng")
 print("db.reviews.find({shipper_id: ObjectId('...')}).pretty()  // Xem đánh giá của shipper")
 print("db.reviews.find({order_id: ObjectId('...')}).pretty()  // Xem đánh giá của đơn hàng (chỉ có 1)")
+print("db.vouchers.find({rest_id: ObjectId('...')}).pretty()  // Xem voucher của nhà hàng")
+print("db.vouchers.find({code: 'GIAM10'}).pretty()  // Tìm voucher theo mã")

@@ -12,6 +12,20 @@
                 </div>
                 <div class="card-body">
                     <form method="POST" enctype="multipart/form-data">
+                        {% if not menu and restaurants and restaurants|length > 1 %}
+                        <div class="mb-3">
+                            <label for="rest_id" class="form-label">Nhà hàng <span class="text-danger">*</span></label>
+                            <select class="form-select" id="rest_id" name="rest_id" required>
+                                {% for rest in restaurants %}
+                                <option value="{{ rest._id }}" {% if selected_rest_id_str and rest._id_str == selected_rest_id_str %}selected{% endif %}>
+                                    {{ rest.get('name', 'N/A') }} - {{ rest.get('addr', 'N/A') }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        {% else %}
+                        <input type="hidden" name="rest_id" value="{{ restaurant._id if restaurant else '' }}">
+                        {% endif %}
                         <div class="mb-3">
                             <label for="name" class="form-label">Tên món <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" id="name" name="name" 
@@ -67,7 +81,7 @@
                         </div>
                         {% endif %}
                         <button type="submit" class="btn btn-primary">{{ 'Cập nhật' if menu else 'Thêm' }}</button>
-                        <a href="{{ url_for('restaurant.menus') }}" class="btn btn-secondary">Hủy</a>
+                        <a href="{{ url_for('restaurant.menus', rest_id=restaurant._id if restaurant else '') }}" class="btn btn-secondary">Hủy</a>
                     </form>
                 </div>
             </div>

@@ -1,0 +1,35 @@
+# Cursor Rules for FastFood NoSQL Project
+
+## Code Style
+- Write all code in English
+- Use clear, descriptive variable and function names
+- Follow PEP 8 for Python code
+- Use meaningful comments in English
+
+## Project Structure
+- Models: app/models.py
+- Routes: app/routes/
+- Templates: templates/
+- Static files: static/
+
+## Database
+- MongoDB with collections: users, restaurants, menus, orders, payments, reviews, vouchers
+- Use ObjectId for all IDs
+- Always convert string IDs to ObjectId when querying
+
+## Authentication
+- Use @login_required decorator for protected routes
+- Use @role_required for role-based access control
+- Get current user with get_current_user() from app.utils.auth
+
+## Error Handling
+- Use flash messages for user feedback
+- Validate all user inputs
+- Handle database errors gracefully
+
+## Best Practices
+- Always validate user permissions before operations
+- Use transactions where appropriate
+- Keep business logic in models, not routes
+- Use helper functions for common operations
+
