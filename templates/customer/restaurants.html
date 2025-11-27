@@ -2,71 +2,275 @@
 
 {% block title %}Nhà hàng - FastFood{% endblock %}
 
+{% block extra_css %}
+<style>
+    /* --- CSS RIÊNG CHO TRANG DANH SÁCH NHÀ HÀNG --- */
+
+    /* 1. Sidebar Danh mục */
+    .sidebar-card {
+        border: none;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .sidebar-header {
+        background-color: #ff5b00;
+        /* Màu cam chủ đạo */
+        color: white;
+        padding: 15px 20px;
+        font-weight: 700;
+        font-size: 1.1rem;
+    }
+
+    .cat-list .list-group-item {
+        border: none;
+        border-bottom: 1px solid #eee;
+        padding: 12px 20px;
+        color: #555;
+        font-weight: 500;
+        transition: all 0.2s;
+    }
+
+    .cat-list .list-group-item:hover,
+    .cat-list .list-group-item.active {
+        background-color: #fff5f0;
+        /* Màu cam rất nhạt */
+        color: #ff5b00;
+        border-left: 4px solid #ff5b00;
+        font-weight: 700;
+    }
+
+    .cat-list .list-group-item.active {
+        background-color: #fff5f0;
+        /* Ghi đè màu xanh mặc định của Bootstrap */
+    }
+
+    /* 2. Thanh tìm kiếm */
+    .search-box .form-control {
+        border-radius: 4px 0 0 4px;
+        border: 1px solid #ddd;
+        padding: 10px 15px;
+        font-size: 0.95rem;
+    }
+
+    .search-box .form-control:focus {
+        border-color: #ff5b00;
+        box-shadow: 0 0 0 0.2rem rgba(255, 91, 0, 0.25);
+    }
+
+    .btn-search {
+        background-color: #ff5b00;
+        color: white;
+        border: none;
+        padding: 0 25px;
+        font-weight: 600;
+        border-radius: 0 4px 4px 0;
+        transition: 0.3s;
+    }
+
+    .btn-search:hover {
+        background-color: #e04f00;
+        color: white;
+    }
+
+    /* 3. Card Nhà hàng (Giống hình mẫu) */
+    .rest-card {
+        border: 1px solid #eee;
+        border-radius: 12px;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        background: white;
+        height: 100%;
+        overflow: hidden;
+    }
+
+    .rest-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .rest-img-wrapper {
+        height: 180px;
+        overflow: hidden;
+        position: relative;
+    }
+
+    .rest-img-wrapper img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s;
+    }
+
+    .rest-card:hover .rest-img-wrapper img {
+        transform: scale(1.05);
+    }
+
+    .rest-body {
+        padding: 15px;
+    }
+
+    .rest-name {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #333;
+        margin-bottom: 5px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .rest-address {
+        font-size: 0.85rem;
+        color: #888;
+        margin-bottom: 10px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .rest-meta {
+        font-size: 0.85rem;
+        color: #555;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .rating-badge {
+        background-color: #fff8e1;
+        color: #ffc107;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-weight: bold;
+    }
+
+    /* Nút bấm (Buttons) */
+    .action-buttons {
+        display: flex;
+        gap: 10px;
+    }
+
+    .btn-action-menu {
+        flex: 1;
+        background-color: #ff5b00;
+        color: white;
+        border: none;
+        padding: 8px 0;
+        font-size: 0.9rem;
+        font-weight: 600;
+        border-radius: 6px;
+        text-align: center;
+        text-decoration: none;
+        transition: 0.2s;
+    }
+
+    .btn-action-menu:hover {
+        background-color: #d14900;
+        color: white;
+    }
+
+    .btn-action-review {
+        flex: 1;
+        background-color: #ffc107;
+        /* Màu vàng */
+        color: #333;
+        border: none;
+        padding: 8px 0;
+        font-size: 0.9rem;
+        font-weight: 600;
+        border-radius: 6px;
+        transition: 0.2s;
+    }
+
+    .btn-action-review:hover {
+        background-color: #ffca2c;
+    }
+
+    /* Modal styles */
+    .star-rating {
+        transition: 0.2s;
+    }
+
+    .star-rating:hover {
+        transform: scale(1.2);
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="container my-5">
+<div class="container" style="margin-top: 100px; margin-bottom: 50px;">
+
     <div class="row">
-        <!-- Sidebar Categories -->
-        <div class="col-md-3 mb-4">
-            <div class="card">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0"><i class="bi bi-list-ul"></i> Danh mục món ăn</h5>
+        <div class="col-lg-3 mb-4">
+            <div class="sidebar-card bg-white">
+                <div class="sidebar-header">
+                    <i class="bi bi-list-ul me-2"></i> Danh mục món ăn
                 </div>
-                <div class="list-group list-group-flush">
-                    <a href="{{ url_for('customer.restaurants') }}" 
-                       class="list-group-item list-group-item-action {% if not category %}active{% endif %}">
-                        <i class="bi bi-grid"></i> Tất cả
+                <div class="list-group list-group-flush cat-list">
+                    <a href="{{ url_for('customer.restaurants') }}"
+                        class="list-group-item list-group-item-action {% if not category %}active{% endif %}">
+                        <i class="bi bi-grid-fill me-2" style="font-size: 0.8rem;"></i> Tất cả
                     </a>
                     {% for cat in categories %}
-                    <a href="{{ url_for('customer.restaurants', category=cat) }}" 
-                       class="list-group-item list-group-item-action {% if category == cat %}active{% endif %}">
-                        <i class="bi bi-tag"></i> {{ cat|title }}
+                    <a href="{{ url_for('customer.restaurants', category=cat) }}"
+                        class="list-group-item list-group-item-action {% if category == cat %}active{% endif %}">
+                        <i class="bi bi-caret-right-fill me-2" style="font-size: 0.7rem;"></i> {{ cat|title }}
                     </a>
                     {% endfor %}
                 </div>
             </div>
         </div>
-        
-        <!-- Main Content -->
-        <div class="col-md-9">
-            <h2 class="mb-4">Danh sách nhà hàng</h2>
-            
-            <!-- Search -->
-            <div class="row mb-4">
-                <div class="col-md-8">
-                    <form method="GET" class="d-flex">
-                        <input type="text" class="form-control me-2" name="search" placeholder="Tìm kiếm nhà hàng..." value="{{ search }}">
-                        {% if category %}
-                        <input type="hidden" name="category" value="{{ category }}">
-                        {% endif %}
-                        <button class="btn btn-primary" type="submit">Tìm kiếm</button>
-                    </form>
-                </div>
+
+        <div class="col-lg-9">
+            <div class="mb-4">
+                <h3 class="fw-bold mb-3" style="color: #333;">Danh sách nhà hàng</h3>
+                <form method="GET" class="search-box d-flex shadow-sm bg-white rounded">
+                    <input type="text" class="form-control border-0" name="search"
+                        placeholder="Tìm kiếm nhà hàng, món ăn..." value="{{ search|default('') }}">
+                    {% if category %}
+                    <input type="hidden" name="category" value="{{ category }}">
+                    {% endif %}
+                    <button class="btn btn-search" type="submit">
+                        <i class="bi bi-search me-1"></i> Tìm kiếm
+                    </button>
+                </form>
             </div>
 
-            <!-- Restaurants Grid -->
-            <div class="row">
+            <div class="row g-4">
                 {% for restaurant in restaurants %}
-                <div class="col-md-6 col-lg-4 mb-4">
-                    <div class="card h-100 shadow-sm">
-                        <img src="{{ url_for('static', filename='img/bg3.webp') }}" class="card-img-top" style="height: 200px; object-fit: cover;" alt="{{ restaurant.name }}">
-                        <div class="card-body d-flex flex-column">
-                            <h5 class="card-title">{{ restaurant.get('name', 'N/A') }}</h5>
-                            <p class="card-text text-muted small flex-grow-1">
-                                <i class="bi bi-geo-alt"></i> {{ restaurant.get('addr', 'N/A') }}
+                <div class="col-md-6 col-lg-4">
+                    <div class="rest-card">
+                        <div class="rest-img-wrapper">
+                            <img src="{{ url_for('static', filename='img/bg3.webp') }}" alt="{{ restaurant.name }}">
+                        </div>
+
+                        <div class="rest-body">
+                            <h5 class="rest-name" title="{{ restaurant.get('name', 'N/A') }}">
+                                {{ restaurant.get('name', 'N/A') }}
+                            </h5>
+                            <p class="rest-address" title="{{ restaurant.get('addr', 'N/A') }}">
+                                <i class="bi bi-geo-alt-fill text-muted me-1"></i> {{ restaurant.get('addr', 'N/A') }}
                             </p>
-                            <div class="mb-2">
-                                <span class="badge bg-warning text-dark">
-                                    <i class="bi bi-star-fill"></i> {{ restaurant.get('rating', 0) }}
-                                </span>
-                                <span class="ms-2 text-muted small">
-                                    <i class="bi bi-clock"></i> {{ restaurant.get('open', 'N/A') }} - {{ restaurant.get('close', 'N/A') }}
+
+                            <div class="rest-meta">
+                                <div class="rating-badge">
+                                    <i class="bi bi-star-fill me-1"></i>{{ restaurant.get('rating', 5.0) }}
+                                </div>
+                                <span>
+                                    <i class="bi bi-clock me-1 text-success"></i>
+                                    {{ restaurant.get('open', '08:00') }} - {{ restaurant.get('close', '22:00') }}
                                 </span>
                             </div>
-                            <div class="d-flex gap-2 mt-auto">
-                                <a href="{{ url_for('customer.restaurant_detail', rest_id=restaurant._id) }}" class="btn btn-primary flex-fill">
-                                    <i class="bi bi-menu-button"></i> Xem menu
+
+                            <div class="action-buttons mt-3">
+                                <a href="{{ url_for('customer.restaurant_detail', rest_id=restaurant._id) }}"
+                                    class="btn-action-menu">
+                                    <i class="bi bi-list"></i> Xem menu
                                 </a>
-                                <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#reviewModal{{ restaurant._id }}">
+                                <button type="button" class="btn-action-review" data-bs-toggle="modal"
+                                    data-bs-target="#reviewModal{{ restaurant._id }}">
                                     <i class="bi bi-star"></i> Đánh giá
                                 </button>
                             </div>
@@ -77,61 +281,67 @@
             </div>
 
             {% if not restaurants %}
-                <div class="alert alert-info text-center">
-                    <i class="bi bi-info-circle"></i> Không tìm thấy nhà hàng nào
-                </div>
+            <div class="text-center py-5">
+                <img src="https://cdn-icons-png.flaticon.com/512/7486/7486747.png" width="80" class="mb-3 opacity-50">
+                <h5 class="text-muted">Không tìm thấy nhà hàng nào phù hợp</h5>
+            </div>
             {% endif %}
         </div>
     </div>
 </div>
 
-<!-- Modal đánh giá nhà hàng -->
 {% for restaurant in restaurants %}
-<div class="modal fade" id="reviewModal{{ restaurant._id }}" tabindex="-1" aria-labelledby="reviewModalLabel{{ restaurant._id }}" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="reviewModalLabel{{ restaurant._id }}">
-                    <i class="bi bi-star"></i> Đánh giá nhà hàng: {{ restaurant.get('name', 'N/A') }}
+<div class="modal fade" id="reviewModal{{ restaurant._id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title fw-bold">
+                    <i class="bi bi-pencil-square"></i> Đánh giá: {{ restaurant.get('name', 'N/A') }}
                 </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <form method="POST" action="{{ url_for('customer.review_restaurant', rest_id=restaurant._id) }}" enctype="multipart/form-data">
-                <div class="modal-body">
-                    <!-- Rating -->
-                    <div class="mb-3">
-                        <label class="form-label">Đánh giá sao <span class="text-danger">*</span></label>
+            <form method="POST" action="{{ url_for('customer.review_restaurant', rest_id=restaurant._id) }}"
+                enctype="multipart/form-data">
+                <div class="modal-body p-4">
+                    <div class="mb-4 text-center">
+                        <label class="form-label fw-bold">Bạn cảm thấy thế nào?</label>
                         <div class="rating-input">
                             <input type="hidden" name="rating" id="rating{{ restaurant._id }}" value="5" required>
-                            <div class="d-flex gap-1">
-                                <i class="bi bi-star-fill text-warning star-rating" data-rating="1" data-target="rating{{ restaurant._id }}" style="font-size: 2rem; cursor: pointer;"></i>
-                                <i class="bi bi-star-fill text-warning star-rating" data-rating="2" data-target="rating{{ restaurant._id }}" style="font-size: 2rem; cursor: pointer;"></i>
-                                <i class="bi bi-star-fill text-warning star-rating" data-rating="3" data-target="rating{{ restaurant._id }}" style="font-size: 2rem; cursor: pointer;"></i>
-                                <i class="bi bi-star-fill text-warning star-rating" data-rating="4" data-target="rating{{ restaurant._id }}" style="font-size: 2rem; cursor: pointer;"></i>
-                                <i class="bi bi-star-fill text-warning star-rating" data-rating="5" data-target="rating{{ restaurant._id }}" style="font-size: 2rem; cursor: pointer;"></i>
+                            <div class="d-flex justify-content-center gap-2">
+                                <i class="bi bi-star-fill text-warning star-rating" data-rating="1"
+                                    data-target="rating{{ restaurant._id }}"
+                                    style="font-size: 2.5rem; cursor: pointer;"></i>
+                                <i class="bi bi-star-fill text-warning star-rating" data-rating="2"
+                                    data-target="rating{{ restaurant._id }}"
+                                    style="font-size: 2.5rem; cursor: pointer;"></i>
+                                <i class="bi bi-star-fill text-warning star-rating" data-rating="3"
+                                    data-target="rating{{ restaurant._id }}"
+                                    style="font-size: 2.5rem; cursor: pointer;"></i>
+                                <i class="bi bi-star-fill text-warning star-rating" data-rating="4"
+                                    data-target="rating{{ restaurant._id }}"
+                                    style="font-size: 2.5rem; cursor: pointer;"></i>
+                                <i class="bi bi-star-fill text-warning star-rating" data-rating="5"
+                                    data-target="rating{{ restaurant._id }}"
+                                    style="font-size: 2.5rem; cursor: pointer;"></i>
                             </div>
-                            <small class="text-muted">Nhấp vào sao để chọn đánh giá</small>
                         </div>
                     </div>
-                    
-                    <!-- Comment -->
+
                     <div class="mb-3">
-                        <label for="comment{{ restaurant._id }}" class="form-label">Nhận xét</label>
-                        <textarea class="form-control" id="comment{{ restaurant._id }}" name="comment" rows="4" placeholder="Chia sẻ trải nghiệm của bạn về nhà hàng này..."></textarea>
+                        <label class="form-label fw-bold">Nhận xét chi tiết</label>
+                        <textarea class="form-control" name="comment" rows="3"
+                            placeholder="Đồ ăn ngon, phục vụ tốt..."></textarea>
                     </div>
-                    
-                    <!-- Images -->
+
                     <div class="mb-3">
-                        <label for="images{{ restaurant._id }}" class="form-label">Hình ảnh (tùy chọn)</label>
-                        <input type="file" class="form-control" id="images{{ restaurant._id }}" name="images" multiple accept="image/*">
-                        <small class="text-muted">Có thể chọn nhiều ảnh (PNG, JPG, JPEG, GIF, WEBP)</small>
+                        <label class="form-label fw-bold">Thêm hình ảnh</label>
+                        <input type="file" class="form-control" name="images" multiple accept="image/*">
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-check-circle"></i> Gửi đánh giá
-                    </button>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Đóng</button>
+                    <button type="submit" class="btn text-white fw-bold" style="background-color: #ff5b00;">Gửi đánh
+                        giá</button>
                 </div>
             </form>
         </div>
@@ -140,62 +350,19 @@
 {% endfor %}
 
 <script>
-// Xử lý click vào sao để chọn rating
-document.addEventListener('DOMContentLoaded', function() {
-    document.querySelectorAll('.star-rating').forEach(function(star) {
-        star.addEventListener('click', function() {
-            const rating = parseInt(this.getAttribute('data-rating'));
-            const targetId = this.getAttribute('data-target');
-            const targetInput = document.getElementById(targetId);
-            const stars = document.querySelectorAll(`[data-target="${targetId}"]`);
-            
-            // Cập nhật input
-            targetInput.value = rating;
-            
-            // Cập nhật hiển thị sao
-            stars.forEach(function(s, index) {
-                if (index < rating) {
-                    s.classList.add('text-warning');
-                    s.classList.remove('text-muted');
-                } else {
-                    s.classList.remove('text-warning');
-                    s.classList.add('text-muted');
-                }
-            });
-        });
-        
-        // Hover effect
-        star.addEventListener('mouseenter', function() {
-            const rating = parseInt(this.getAttribute('data-rating'));
-            const targetId = this.getAttribute('data-target');
-            const stars = document.querySelectorAll(`[data-target="${targetId}"]`);
-            
-            stars.forEach(function(s, index) {
-                if (index < rating) {
-                    s.style.opacity = '1';
-                } else {
-                    s.style.opacity = '0.3';
-                }
-            });
-        });
-        
-        star.addEventListener('mouseleave', function() {
-            const targetId = this.getAttribute('data-target');
-            const stars = document.querySelectorAll(`[data-target="${targetId}"]`);
-            const currentRating = parseInt(document.getElementById(targetId).value);
-            
-            stars.forEach(function(s, index) {
-                s.style.opacity = '1';
-                if (index < currentRating) {
-                    s.classList.add('text-warning');
-                    s.classList.remove('text-muted');
-                } else {
-                    s.classList.remove('text-warning');
-                    s.classList.add('text-muted');
-                }
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('.star-rating').forEach(function (star) {
+            star.addEventListener('click', function () {
+                const rating = parseInt(this.getAttribute('data-rating'));
+                const targetId = this.getAttribute('data-target');
+                const targetInput = document.getElementById(targetId);
+                const stars = document.querySelectorAll(`[data-target="${targetId}"]`);
+                targetInput.value = rating;
+                stars.forEach((s, idx) => {
+                    s.className = idx < rating ? 'bi bi-star-fill text-warning star-rating' : 'bi bi-star text-muted star-rating';
+                });
             });
         });
     });
-});
 </script>
 {% endblock %}

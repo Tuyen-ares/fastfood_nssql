@@ -2,80 +2,163 @@
 
 {% block title %}{{ restaurant.name }} - FastFood{% endblock %}
 
-{% block content %}
-<div class="container my-5">
-    <div class="row mb-4">
-        <div class="col-md-8">
-            <h2>{{ restaurant.name }}</h2>
-            <p class="text-muted">
-                <i class="bi bi-geo-alt"></i> {{ restaurant.addr }}
-            </p>
-            <p>
-                <i class="bi bi-star-fill text-warning"></i> {{ restaurant.rating }}
-                <span class="ms-3"><i class="bi bi-clock"></i> {{ restaurant.open }} - {{ restaurant.close }}</span>
-            </p>
-        </div>
-    </div>
+{% block extra_css %}
+<style>
+    /* 1. HERO SECTION & INFO */
+    body {
+        padding-top: 0;
+    }
 
-    <h3 class="mb-4">Menu</h3>
-    <div class="row g-3">
-        {% for menu in menus %}
-        <div class="col-md-4 col-lg-3">
-            <div class="card h-100 shadow-sm border-0" style="border-radius: 12px; overflow: hidden; transition: transform 0.3s ease, box-shadow 0.3s ease;">
-                <div style="overflow: hidden; height: 160px; min-height: 160px; background-color: #f8f9fa; display: flex; align-items: center; justify-content: center;">
-                    <img src="{{ menu.display_image }}" 
-                         class="card-img-top" 
-                         style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s ease; display: block;" 
-                         alt="{{ menu.get('name', 'N/A') }}"
-                         onmouseover="this.style.transform='scale(1.05)'"
-                         onmouseout="this.style.transform='scale(1)'"
-                         onerror="this.style.display='none'; this.parentElement.innerHTML='<i class=\'bi bi-image text-muted\' style=\'font-size: 3rem;\'></i>'">
-                </div>
-                <div class="card-body d-flex flex-column" style="padding: 1rem;">
-                    <h6 class="card-title mb-2" style="font-size: 1rem; font-weight: 600; line-height: 1.3;">{{ menu.get('name', 'N/A') }}</h6>
-                    <p class="card-text text-muted small mb-2" style="font-size: 0.8rem;">
-                        <i class="bi bi-tag"></i> {{ menu.get('cat', 'N/A') }}
-                    </p>
-                    <div class="mt-auto">
-                        <p class="mb-2">
-                            <strong class="text-danger" style="font-size: 1.1rem;">{{ "{:,.0f}".format(menu.get('price', 0)) }} đ</strong>
-                        </p>
-                        <form method="POST" action="{{ url_for('customer.add_to_cart') }}" class="d-inline w-100">
-                            <input type="hidden" name="menu_id" value="{{ menu._id }}">
-                            <input type="hidden" name="rest_id" value="{{ restaurant._id }}">
-                            <input type="hidden" name="quantity" value="1">
-                            <button type="submit" class="btn btn-primary btn-sm w-100" style="font-size: 0.85rem;">
-                                <i class="bi bi-cart-plus"></i> Thêm vào giỏ
-                            </button>
-                        </form>
-                    </div>
+    /* Reset padding vì ta dùng banner lớn */
+
+    .rest-hero {
+        position: relative;
+        height: 350px;
+        background: linear-gradient(135deg, #111 0%, #333 100%);
+        /* Nền tối mặc định */
+        display: flex;
+        align-items: flex-end;
+        padding-bottom: 50px;
+        margin-bottom: 60px;
+        /* Chừa chỗ cho card thông tin nổi lên */
+    }
+
+    /* Card thông tin nhà hàng nổi lên */
+    .rest-info-card {
+        background: white;
+        border-radius: 16px;
+        padding: 30px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        margin-top: -80px;
+        /* Kéo lên đè lên banner */
+        position: relative;
+        z-index: 10;
+    }
+
+    /* 2. MENU CARD */
+    .menu-card {
+        border: none;
+        border-radius: 16px;
+        overflow: hidden;
+        background: white;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        transition: transform 0.3s ease;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .menu-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    .menu-img-wrapper {
+        height: 180px;
+        overflow: hidden;
+        position: relative;
+    }
+
+    .menu-img-wrapper img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s;
+    }
+
+    .menu-card:hover .menu-img-wrapper img {
+        transform: scale(1.08);
+    }
+
+    .btn-add-cart {
+        background-color: #ff5b00;
+        color: white;
+        border: none;
+        border-radius: 50px;
+        padding: 8px 20px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        transition: 0.2s;
+        width: 100%;
+    }
+
+    .btn-add-cart:hover {
+        background-color: #e04f00;
+        transform: translateY(-2px);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="rest-hero"  
+    style="background-image: url(&quot;{{ url_for('static', filename='img/bg5.jpg') }}&quot;); background-size: cover; background-position: center;">
+    <div style="position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.6);"></div>
+</div>
+
+<div class="container">
+    <div class="rest-info-card">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="fw-bold mb-2" style="color: #333;">{{ restaurant.name }}</h1>
+                <p class="text-muted mb-3"><i class="bi bi-geo-alt-fill text-danger"></i> {{ restaurant.addr }}</p>
+
+                <div class="d-flex gap-3">
+                    <span class="badge bg-warning text-dark px-3 py-2 rounded-pill">
+                        <i class="bi bi-star-fill"></i> {{ restaurant.rating }} / 5
+                    </span>
+                    <span class="badge bg-light text-dark border px-3 py-2 rounded-pill">
+                        <i class="bi bi-clock"></i> {{ restaurant.open }} - {{ restaurant.close }}
+                    </span>
+                    <span class="badge bg-success bg-opacity-10 text-success px-3 py-2 rounded-pill">
+                        <i class="bi bi-check-circle"></i> Đang mở cửa
+                    </span>
                 </div>
             </div>
         </div>
-        {% endfor %}
     </div>
 
-    {% if not menus %}
-        <div class="alert alert-info text-center">
-            <i class="bi bi-info-circle"></i> Nhà hàng chưa có menu
+    <div class="my-5">
+        <h3 class="fw-bold mb-4 border-start border-4 border-warning ps-3" style="color: #333;">Thực đơn món ăn</h3>
+
+        <div class="row g-4">
+            {% for menu in menus %}
+            <div class="col-md-6 col-lg-3">
+                <div class="menu-card">
+                    <div class="menu-img-wrapper">
+                        <img src="{{ menu.display_image }}"
+                            onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'"
+                            alt="{{ menu.get('name') }}">
+                    </div>
+                    <div class="card-body d-flex flex-column p-3">
+                        <h6 class="card-title fw-bold mb-1 text-truncate" title="{{ menu.get('name') }}">{{
+                            menu.get('name', 'Món ăn') }}</h6>
+                        <small class="text-muted mb-3"><i class="bi bi-tag"></i> {{ menu.get('cat', 'Khác') }}</small>
+
+                        <div class="mt-auto d-flex justify-content-between align-items-center">
+                            <span class="fs-5 fw-bold text-danger">{{ "{:,.0f}".format(menu.get('price', 0)) }}đ</span>
+
+                            <form method="POST" action="{{ url_for('customer.add_to_cart') }}">
+                                <input type="hidden" name="menu_id" value="{{ menu._id }}">
+                                <input type="hidden" name="rest_id" value="{{ restaurant._id }}">
+                                <input type="hidden" name="quantity" value="1">
+                                <button type="submit" class="btn btn-outline-warning rounded-circle"
+                                    style="width: 40px; height: 40px; padding: 0; color: #ff5b00; border-color: #ff5b00;">
+                                    <i class="bi bi-plus-lg fw-bold"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
         </div>
-    {% endif %}
+
+        {% if not menus %}
+        <div class="text-center py-5">
+            <img src="https://cdn-icons-png.flaticon.com/512/13637/13637469.png" width="100" class="mb-3 opacity-50">
+            <p class="text-muted">Nhà hàng chưa cập nhật thực đơn.</p>
+        </div>
+        {% endif %}
+    </div>
 </div>
 {% endblock %}
-
-{% block extra_js %}
-<script>
-// Card hover effect
-document.querySelectorAll('.card').forEach(card => {
-    card.addEventListener('mouseenter', function() {
-        this.style.transform = 'translateY(-5px)';
-        this.style.boxShadow = '0 10px 25px rgba(0,0,0,0.15)';
-    });
-    card.addEventListener('mouseleave', function() {
-        this.style.transform = 'translateY(0)';
-        this.style.boxShadow = '';
-    });
-});
-</script>
-{% endblock %}
-

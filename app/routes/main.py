@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, url_for
+from flask import Blueprint, render_template, url_for, request
 from app.models import Menu, Restaurant
 from app.database import get_db
 from bson import ObjectId
@@ -73,9 +73,22 @@ def index():
         menus_by_category[category].append(menu)
     
     # Chuyển thành dict thông thường và sắp xếp
-    categories = dict(sorted(menus_by_category.items()))
-    
-    return render_template('main/index.html', categories=categories, menus_by_category=menus_by_category)
+    menus_by_category = dict(sorted(menus_by_category.items()))
+
+    # Lấy tham số lọc từ query string (ví dụ ?category=burger)
+    category_filter = request.args.get('category', '').strip()
+
+    # Danh sách tất cả categories (dùng để hiển thị nút lọc)
+    all_categories = sorted(menus_by_category.keys())
+
+    # Nếu có filter, chỉ giữ category đó
+    if category_filter:
+        filtered = {category_filter: menus_by_category.get(category_filter, [])}
+        categories = filtered
+    else:
+        categories = menus_by_category
+
+    return render_template('main/index.html', categories=categories, menus_by_category=menus_by_category, all_categories=all_categories, category=category_filter)
 
 @main_bp.route('/about')
 def about():

@@ -2,87 +2,244 @@
 
 {% block title %}Đăng ký - FastFood{% endblock %}
 
+{% block extra_css %}
+<style>
+    body {
+        overflow-x: hidden;
+    }
+
+    .auth-wrapper {
+        min-height: 100vh;
+        display: flex;
+    }
+
+    /* Hình ảnh nền bên phải */
+    .auth-image {
+        flex: 1;
+        background-image: url('https://images.unsplash.com/photo-1513104890138-7c749659a591?q=80&w=1000&auto=format&fit=crop');
+        background-size: cover;
+        background-position: center;
+        display: none;
+    }
+
+    .auth-form-container {
+        flex: 1;
+        padding: 40px 50px;
+        background: white;
+        max-width: 650px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .form-control,
+    .form-select {
+        padding: 10px 15px;
+        border-radius: 8px;
+        background-color: #f8f9fa;
+        border: 1px solid #eee;
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+        background-color: #fff;
+        border-color: #ff5b00;
+        box-shadow: 0 0 0 4px rgba(255, 91, 0, 0.1);
+    }
+
+    .form-label {
+        font-weight: 600;
+        font-size: 0.9rem;
+        color: #555;
+    }
+
+    .btn-register {
+        background-color: #ff5b00;
+        color: white;
+        font-weight: 700;
+        padding: 12px;
+        border-radius: 8px;
+        border: none;
+        width: 100%;
+        transition: 0.3s;
+    }
+
+    .btn-register:hover {
+        background-color: #e04f00;
+        transform: translateY(-2px);
+        color: white;
+    }
+
+    /* Custom Radio for Role */
+    .role-option {
+        border: 1px solid #eee;
+        border-radius: 8px;
+        padding: 10px;
+        cursor: pointer;
+        transition: 0.2s;
+        text-align: center;
+        height: 100%;
+        /* Để các ô bằng nhau */
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .role-option:hover {
+        background: #fff5f0;
+        border-color: #ffccaa;
+    }
+
+    .role-input:checked+.role-option {
+        background-color: #fff5f0;
+        border-color: #ff5b00;
+        color: #ff5b00;
+        font-weight: bold;
+    }
+
+    .role-icon {
+        font-size: 1.5rem;
+        margin-bottom: 5px;
+        display: block;
+    }
+
+    @media (min-width: 992px) {
+        .auth-image {
+            display: block;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="container my-5">
-    <div class="row justify-content-center">
-        <div class="col-md-8 col-lg-6">
-            <div class="card shadow">
-                <div class="card-body p-5">
-                    <h2 class="card-title text-center mb-4">Đăng ký tài khoản</h2>
-                    <form method="POST" action="{{ url_for('auth.register') }}">
-                        <div class="mb-3">
-                            <label for="name" class="form-label">Họ tên</label>
-                            <input type="text" class="form-control" id="name" name="name" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="phone" class="form-label">Số điện thoại</label>
-                            <input type="text" class="form-control" id="phone" name="phone" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="password" class="form-label">Mật khẩu</label>
-                            <input type="password" class="form-control" id="password" name="password" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="confirm_password" class="form-label">Xác nhận mật khẩu</label>
-                            <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="role" class="form-label">Loại tài khoản <span class="text-danger">*</span></label>
-                            <select class="form-select" id="role" name="role" required>
-                                <option value="customer" selected>Khách hàng</option>
-                                <option value="restaurant_owner">Chủ nhà hàng</option>
-                            </select>
-                            <small class="form-text text-muted">
-                                <i class="bi bi-info-circle"></i> Chỉ có thể đăng ký với vai trò Khách hàng hoặc Chủ nhà hàng
-                            </small>
-                        </div>
-                        <div id="restaurant_owner_info" style="display: none;" class="alert alert-info">
-                            <i class="bi bi-info-circle"></i> <strong>Lưu ý:</strong> Sau khi đăng ký, bạn cần đăng ký nhà hàng và chờ admin duyệt để bắt đầu sử dụng hệ thống.
-                        </div>
-                        <div id="shipper_fields" style="display: none;">
-                            <div class="mb-3">
-                                <label for="vehicle" class="form-label">Loại xe</label>
-                                <input type="text" class="form-control" id="vehicle" name="vehicle" placeholder="VD: Wave, SH">
+<div class="auth-wrapper">
+    <div class="auth-form-container ms-auto">
+        <div class="mb-4">
+            <a href="{{ url_for('main.index') }}" class="text-decoration-none text-muted mb-3 d-inline-block">
+                <i class="bi bi-arrow-left"></i> Trang chủ
+            </a>
+            <h2 class="fw-bold">Tạo tài khoản mới 🚀</h2>
+            <p class="text-muted">Chọn vai trò phù hợp để bắt đầu.</p>
+        </div>
+
+        <form method="POST" action="{{ url_for('auth.register') }}">
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Họ và tên</label>
+                    <input type="text" class="form-control" name="name" placeholder="Nguyễn Văn A" required>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Số điện thoại</label>
+                    <input type="text" class="form-control" name="phone" placeholder="09xxxxxxx" required>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Mật khẩu</label>
+                    <input type="password" class="form-control" name="password" placeholder="••••••••" required>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Xác nhận mật khẩu</label>
+                    <input type="password" class="form-control" name="confirm_password" placeholder="••••••••" required>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label">Bạn đăng ký với vai trò?</label>
+                <div class="row g-2">
+                    <div class="col-4">
+                        <label class="w-100 h-100">
+                            <input type="radio" name="role" value="customer" class="d-none role-input" checked
+                                onchange="toggleFields()">
+                            <div class="role-option">
+                                <i class="bi bi-emoji-smile role-icon"></i>
+                                <span class="small">Khách hàng</span>
                             </div>
-                            <div class="mb-3">
-                                <label for="plate" class="form-label">Biển số</label>
-                                <input type="text" class="form-control" id="plate" name="plate">
+                        </label>
+                    </div>
+                    <div class="col-4">
+                        <label class="w-100 h-100">
+                            <input type="radio" name="role" value="restaurant_owner" class="d-none role-input"
+                                onchange="toggleFields()">
+                            <div class="role-option">
+                                <i class="bi bi-shop role-icon"></i>
+                                <span class="small">Chủ quán</span>
                             </div>
-                            <div class="mb-3">
-                                <label for="cccd" class="form-label">CCCD/CMND</label>
-                                <input type="text" class="form-control" id="cccd" name="cccd">
+                        </label>
+                    </div>
+                    <div class="col-4">
+                        <label class="w-100 h-100">
+                            <input type="radio" name="role" value="shipper" class="d-none role-input"
+                                onchange="toggleFields()">
+                            <div class="role-option">
+                                <i class="bi bi-truck role-icon"></i>
+                                <span class="small">Tài xế</span>
                             </div>
-                            <div class="mb-3">
-                                <label for="license" class="form-label">Bằng lái</label>
-                                <input type="text" class="form-control" id="license" name="license">
-                            </div>
-                        </div>
-                        <button type="submit" class="btn btn-primary w-100 mb-3">Đăng ký</button>
-                    </form>
-                    <div class="text-center">
-                        <p>Đã có tài khoản? <a href="{{ url_for('auth.login') }}">Đăng nhập</a></p>
+                        </label>
                     </div>
                 </div>
+            </div>
+
+            <div id="restaurant_owner_info" class="alert alert-warning border-0 bg-warning bg-opacity-10 text-dark mb-3"
+                style="display: none;">
+                <div class="d-flex align-items-start">
+                    <i class="bi bi-exclamation-circle-fill text-warning me-2 mt-1"></i>
+                    <small>Lưu ý: Tài khoản <strong>Chủ nhà hàng</strong> cần đăng ký thông tin quán và chờ Admin phê
+                        duyệt.</small>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-register">ĐĂNG KÝ TÀI KHOẢN</button>
+        </form>
+
+        <div class="text-center mt-4">
+            <span class="text-muted">Đã có tài khoản?</span>
+            <a href="{{ url_for('auth.login') }}" class="fw-bold text-decoration-none ms-1" style="color: #ff5b00;">Đăng
+                nhập</a>
+        </div>
+    </div>
+
+    <div class="auth-image">
+        <div
+            style="background: linear-gradient(to top, rgba(0,0,0,0.8), transparent); height: 100%; display: flex; align-items: flex-end; padding: 50px;">
+            <div class="text-white">
+                <h2 class="fw-bold">Giao hàng siêu tốc</h2>
+                <p>Tham gia đội ngũ FastFood để tăng thu nhập và trải nghiệm dịch vụ hàng đầu.</p>
             </div>
         </div>
     </div>
 </div>
-
-<script>
-document.getElementById('role').addEventListener('change', function() {
-    const shipperFields = document.getElementById('shipper_fields');
-    const restaurantOwnerInfo = document.getElementById('restaurant_owner_info');
-    
-    // Ẩn tất cả fields
-    shipperFields.style.display = 'none';
-    restaurantOwnerInfo.style.display = 'none';
-    
-    // Hiển thị thông tin phù hợp
-    if (this.value === 'restaurant_owner') {
-        restaurantOwnerInfo.style.display = 'block';
-    }
-    // Không cần hiển thị fields cho shipper vì đã bỏ option này
-});
-</script>
 {% endblock %}
 
+{% block extra_js %}
+<script>
+    function toggleFields() {
+        // Lấy role đang được chọn
+        const role = document.querySelector('input[name="role"]:checked').value;
+
+        // Lấy các khối thông tin
+        const shipperFields = document.getElementById('shipper_fields');
+        const restInfo = document.getElementById('restaurant_owner_info');
+
+        // Reset: Ẩn tất cả trước
+        shipperFields.style.display = 'none';
+        restInfo.style.display = 'none';
+
+        // Loại bỏ 'required' cho shipper fields để tránh lỗi khi submit form khác
+        const shipperInputs = shipperFields.querySelectorAll('input');
+        shipperInputs.forEach(input => input.required = false);
+
+        // Logic hiển thị
+        if (role === 'restaurant_owner') {
+            restInfo.style.display = 'block';
+        }
+        else if (role === 'shipper') {
+            shipperFields.style.display = 'block';
+            // Bắt buộc nhập nếu là shipper
+            shipperInputs.forEach(input => input.required = true);
+        }
+    }
+</script>
+{% endblock %}

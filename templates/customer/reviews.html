@@ -2,122 +2,294 @@
 
 {% block title %}Đánh giá của tôi{% endblock %}
 
+{% block extra_css %}
+<style>
+    /* --- CUSTOM CSS CHO TRANG REVIEWS --- */
+    body {
+        background-color: #f8f9fa;
+    }
+
+    .page-title {
+        font-weight: 700;
+        color: #333;
+        border-left: 5px solid #ff5b00;
+        padding-left: 15px;
+    }
+
+    /* Review Card */
+    .review-card {
+        background: white;
+        border: none;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+        margin-bottom: 30px;
+        transition: transform 0.2s;
+        overflow: hidden;
+    }
+
+    .review-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+    }
+
+    /* Header của Card */
+    .review-header {
+        padding: 20px;
+        border-bottom: 1px solid #f0f0f0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background-color: #fff;
+    }
+
+    .shop-name {
+        font-weight: 700;
+        font-size: 1.1rem;
+        color: #333;
+        text-decoration: none;
+        transition: 0.2s;
+    }
+
+    .shop-name:hover {
+        color: #ff5b00;
+    }
+
+    .review-date {
+        font-size: 0.85rem;
+        color: #999;
+    }
+
+    /* Body của Card */
+    .review-body {
+        padding: 25px;
+    }
+
+    /* Phần điểm số */
+    .rating-box {
+        background: #fff8e1;
+        /* Nền vàng nhạt */
+        padding: 15px;
+        border-radius: 12px;
+        text-align: center;
+        min-width: 100px;
+    }
+
+    .rating-score {
+        font-size: 1.8rem;
+        font-weight: 800;
+        color: #ffb100;
+        line-height: 1;
+    }
+
+    .rating-label {
+        font-size: 0.8rem;
+        color: #777;
+        margin-top: 5px;
+    }
+
+    /* Phần comment */
+    .review-comment {
+        font-style: italic;
+        color: #555;
+        background: #f9f9f9;
+        padding: 15px;
+        border-radius: 8px;
+        margin-top: 15px;
+        border-left: 3px solid #ddd;
+    }
+
+    /* Shipper Section */
+    .shipper-badge {
+        background-color: #e3f2fd;
+        color: #0d47a1;
+        padding: 10px 15px;
+        border-radius: 10px;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    /* Menu Items */
+    .menu-item-review {
+        border-bottom: 1px dashed #eee;
+        padding: 8px 0;
+    }
+
+    .menu-item-review:last-child {
+        border-bottom: none;
+    }
+
+    /* Image Grid */
+    .review-gallery {
+        display: flex;
+        gap: 10px;
+        overflow-x: auto;
+        padding-bottom: 5px;
+    }
+
+    .review-img {
+        width: 100px;
+        height: 100px;
+        object-fit: cover;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: 0.2s;
+        border: 1px solid #eee;
+    }
+
+    .review-img:hover {
+        opacity: 0.8;
+        transform: scale(1.05);
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 80px 20px;
+        background: white;
+        border-radius: 16px;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container my-5">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2><i class="bi bi-star"></i> Đánh giá của tôi</h2>
-        <a href="{{ url_for('customer.dashboard') }}" class="btn btn-secondary">
-            <i class="bi bi-arrow-left"></i> Quay lại Dashboard
+    <div class="d-flex justify-content-between align-items-center mb-5">
+        <h2 class="page-title mb-0">Lịch sử đánh giá</h2>
+        <a href="{{ url_for('customer.dashboard') }}"
+            class="btn btn-light rounded-pill px-4 fw-bold text-secondary shadow-sm">
+            <i class="bi bi-arrow-left me-1"></i> Dashboard
         </a>
     </div>
-    
+
     {% if reviews %}
-        {% for review in reviews %}
-        <div class="card mb-4">
-            <div class="card-header bg-primary text-white">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <h6 class="mb-0">
-                            <i class="bi bi-shop"></i> {{ review.restaurant.get('name', 'N/A') if review.restaurant else 'N/A' }}
-                        </h6>
-                        <small>
-                            <i class="bi bi-calendar"></i> {{ review.get('created_at').strftime('%d/%m/%Y %H:%M') if review.get('created_at') else 'N/A' }}
-                        </small>
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            {% for review in reviews %}
+            <div class="review-card">
+                <div class="review-header">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="bg-warning text-white rounded-circle d-flex align-items-center justify-content-center"
+                            style="width: 50px; height: 50px; font-size: 1.5rem;">
+                            <i class="bi bi-shop"></i>
+                        </div>
+                        <div>
+                            <a href="#" class="shop-name d-block">
+                                {{ review.restaurant.get('name', 'Nhà hàng không tồn tại') if review.restaurant else
+                                'N/A' }}
+                            </a>
+                            <span class="review-date">
+                                <i class="bi bi-clock-history me-1"></i>
+                                {{ review.get('created_at').strftime('%d/%m/%Y lúc %H:%M') if review.get('created_at')
+                                else 'N/A' }}
+                            </span>
+                        </div>
                     </div>
+
                     {% if review.get('order') %}
-                    <a href="{{ url_for('customer.order_detail', order_id=review.order._id) }}" class="btn btn-sm btn-light">
-                        <i class="bi bi-eye"></i> Xem đơn hàng
+                    <a href="{{ url_for('customer.order_detail', order_id=review.order._id) }}"
+                        class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                        Xem đơn hàng <i class="bi bi-chevron-right"></i>
                     </a>
                     {% endif %}
                 </div>
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    <!-- Đánh giá Nhà hàng -->
-                    <div class="col-md-6 mb-3">
-                        <h6><i class="bi bi-shop"></i> Đánh giá Nhà hàng</h6>
-                        <div class="mb-2">
-                            {% for i in range(5) %}
-                                <i class="bi bi-star{{ '-fill' if i < review.get('restaurant_rating', 0) else '' }} text-warning"></i>
-                            {% endfor %}
-                            {% if review.get('restaurant_rating') == 0 %}
-                                <span class="ms-2 text-danger">0 sao</span>
-                            {% else %}
-                                <span class="ms-2">{{ review.get('restaurant_rating', 0) }}/5</span>
+
+                <div class="review-body">
+                    <div class="row g-4">
+                        <div class="col-md-4 text-center border-end-md">
+                            <div class="d-flex flex-column align-items-center justify-content-center h-100">
+                                <div class="rating-box mb-3">
+                                    <div class="rating-score">{{ review.get('restaurant_rating', 0) }}</div>
+                                    <div class="text-warning small">
+                                        {% for i in range(5) %}
+                                        <i
+                                            class="bi bi-star{{ '-fill' if i < review.get('restaurant_rating', 0) else '' }}"></i>
+                                        {% endfor %}
+                                    </div>
+                                    <div class="rating-label">Chất lượng quán</div>
+                                </div>
+
+                                {% if review.get('shipper') %}
+                                <div class="shipper-badge w-100 justify-content-center mt-2">
+                                    <i class="bi bi-truck fs-5"></i>
+                                    <div class="text-start lh-1">
+                                        <div class="fw-bold" style="font-size: 0.8rem;">Tài xế: {{
+                                            review.shipper.get('name', 'N/A') }}</div>
+                                        <div class="text-warning small mt-1">
+                                            {% for i in range(review.get('driver_rating', 0)) %}
+                                            <i class="bi bi-star-fill"></i>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="col-md-8">
+                            <h6 class="fw-bold text-dark"><i class="bi bi-chat-quote-fill text-warning me-2"></i>Nhận
+                                xét của bạn</h6>
+                            <div class="review-comment">
+                                "{{ review.get('restaurant_comment') or 'Không có nhận xét chi tiết.' }}"
+                            </div>
+
+                            {% if review.get('images') %}
+                            <div class="mt-4">
+                                <h6 class="fw-bold text-dark mb-2"><i class="bi bi-images text-primary me-2"></i>Hình
+                                    ảnh thực tế</h6>
+                                <div class="review-gallery">
+                                    {% for image_url in review.get('images', []) %}
+                                    <img src="{{ image_url }}" class="review-img shadow-sm" alt="Review Image">
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            {% if review.get('menu_ratings') %}
+                            <div class="mt-4">
+                                <h6 class="fw-bold text-dark mb-2"><i class="bi bi-egg-fried text-danger me-2"></i>Chi
+                                    tiết món ăn</h6>
+                                <div class="bg-light rounded p-3">
+                                    {% for menu_rating in review.get('menu_ratings', []) %}
+                                    <div class="menu-item-review d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <span class="fw-bold text-secondary">{{ menu_rating.get('menu_name', 'Món
+                                                ăn') }}</span>
+                                            {% if menu_rating.get('comment') %}
+                                            <br><small class="text-muted fst-italic">- {{ menu_rating.get('comment')
+                                                }}</small>
+                                            {% endif %}
+                                        </div>
+                                        <div class="text-warning text-nowrap ms-3">
+                                            <span class="fw-bold text-dark me-1">{{ menu_rating.get('rating', 0)
+                                                }}</span>
+                                            <i class="bi bi-star-fill"></i>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
                             {% endif %}
                         </div>
-                        {% if review.get('restaurant_comment') %}
-                            <p class="mb-0">{{ review.get('restaurant_comment') }}</p>
-                        {% endif %}
-                    </div>
-                    
-                    <!-- Đánh giá Shipper -->
-                    {% if review.get('shipper') %}
-                    <div class="col-md-6 mb-3">
-                        <h6><i class="bi bi-truck"></i> Đánh giá Tài xế</h6>
-                        <p class="text-muted small mb-1">Tài xế: <strong>{{ review.shipper.get('name', 'N/A') }}</strong></p>
-                        <div class="mb-2">
-                            {% for i in range(5) %}
-                                <i class="bi bi-star{{ '-fill' if i < review.get('driver_rating', 0) else '' }} text-warning"></i>
-                            {% endfor %}
-                            {% if review.get('driver_rating') == 0 %}
-                                <span class="ms-2 text-danger">0 sao</span>
-                            {% else %}
-                                <span class="ms-2">{{ review.get('driver_rating', 0) }}/5</span>
-                            {% endif %}
-                        </div>
-                        {% if review.get('driver_comment') %}
-                            <p class="mb-0">{{ review.get('driver_comment') }}</p>
-                        {% endif %}
-                    </div>
-                    {% endif %}
-                </div>
-                
-                <!-- Đánh giá Món ăn -->
-                {% if review.get('menu_ratings') %}
-                <div class="mt-3 p-3 bg-light rounded">
-                    <h6><i class="bi bi-egg-fried"></i> Đánh giá Món ăn</h6>
-                    {% for menu_rating in review.get('menu_ratings', []) %}
-                    <div class="mb-2">
-                        <strong>{{ menu_rating.get('menu_name', 'N/A') }}</strong>
-                        <div class="mb-1">
-                            {% for i in range(5) %}
-                                <i class="bi bi-star{{ '-fill' if i < menu_rating.get('rating', 0) else '' }} text-warning"></i>
-                            {% endfor %}
-                            <span class="ms-2">{{ menu_rating.get('rating', 0) }}/5</span>
-                        </div>
-                        {% if menu_rating.get('comment') %}
-                            <p class="mb-0 small text-muted">{{ menu_rating.get('comment') }}</p>
-                        {% endif %}
-                    </div>
-                    {% endfor %}
-                </div>
-                {% endif %}
-                
-                <!-- Hình ảnh -->
-                {% if review.get('images') %}
-                <div class="mt-3">
-                    <h6><i class="bi bi-images"></i> Hình ảnh</h6>
-                    <div class="d-flex flex-wrap gap-2">
-                        {% for image_url in review.get('images', []) %}
-                            <img src="{{ image_url }}" alt="Review image" class="img-thumbnail" style="max-width: 200px; max-height: 200px; object-fit: cover;">
-                        {% endfor %}
                     </div>
                 </div>
-                {% endif %}
             </div>
+            {% endfor %}
         </div>
-        {% endfor %}
+    </div>
+
     {% else %}
-        <div class="alert alert-info text-center">
-            <i class="bi bi-info-circle"></i> Bạn chưa có đánh giá nào
-            <p class="mb-0 mt-2">
-                <a href="{{ url_for('customer.orders') }}" class="btn btn-primary btn-sm">
-                    <i class="bi bi-cart-check"></i> Xem đơn hàng để đánh giá
-                </a>
-            </p>
-        </div>
+    <div class="empty-state shadow-sm">
+        <i class="bi bi-star display-1 text-black-50 mb-3"></i>
+        <h4 class="fw-bold text-secondary">Chưa có đánh giá nào</h4>
+        <p class="text-muted mb-4">Bạn chưa viết đánh giá nào. Hãy đặt món và chia sẻ cảm nhận nhé!</p>
+        <a href="{{ url_for('customer.restaurants') }}"
+            class="btn btn-warning text-white fw-bold rounded-pill px-5 py-2 shadow-sm"
+            style="background-color: #ff5b00; border:none;">
+            Đặt món ngay
+        </a>
+    </div>
     {% endif %}
 </div>
 {% endblock %}
-

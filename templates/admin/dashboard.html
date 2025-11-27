@@ -2,123 +2,286 @@
 
 {% block title %}Admin Dashboard - FastFood{% endblock %}
 
+{% block extra_css %}
+<style>
+    /* 1. STATS CARD STYLE (Giống hình 1) */
+    .stats-card {
+        background: white;
+        border: 1px solid #f0f0f0;
+        border-radius: 16px;
+        padding: 24px;
+        height: 100%;
+        transition: transform 0.2s, box-shadow 0.2s;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    .stats-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        border-color: transparent;
+    }
+
+    .stats-icon-box {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin-bottom: 15px;
+    }
+
+    .stats-value {
+        font-size: 2.5rem;
+        font-weight: 700;
+        line-height: 1;
+        text-align: right;
+    }
+
+    .stats-label {
+        font-size: 0.95rem;
+        color: #666;
+        font-weight: 500;
+    }
+
+    /* Màu sắc riêng cho từng thẻ */
+    .card-blue .stats-icon-box {
+        background-color: #e3f2fd;
+        color: #0d6efd;
+    }
+
+    .card-blue .stats-value {
+        color: #0d6efd;
+    }
+
+    .card-green .stats-icon-box {
+        background-color: #e8f5e9;
+        color: #198754;
+    }
+
+    .card-green .stats-value {
+        color: #198754;
+    }
+
+    .card-purple .stats-icon-box {
+        background-color: #f3e5f5;
+        color: #9c27b0;
+    }
+
+    .card-purple .stats-value {
+        color: #9c27b0;
+    }
+
+    .card-orange .stats-icon-box {
+        background-color: #fff3e0;
+        color: #fd7e14;
+    }
+
+    .card-orange .stats-value {
+        color: #fd7e14;
+    }
+
+    /* 2. SECTION CARD STYLE (Giống hình 2) */
+    .section-card {
+        background: white;
+        border: 1px solid #f0f0f0;
+        border-radius: 16px;
+        padding: 30px;
+        height: 100%;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+    }
+
+    .section-title {
+        font-weight: 700;
+        color: #333;
+        margin-bottom: 25px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 1.1rem;
+    }
+
+    /* Danh sách chờ duyệt */
+    .pending-list-item {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 15px 20px;
+        margin-bottom: 12px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-weight: 500;
+        color: #555;
+    }
+
+    .pending-badge {
+        background: #e9ecef;
+        color: #333;
+        font-weight: 700;
+        padding: 5px 12px;
+        border-radius: 20px;
+        min-width: 35px;
+        text-align: center;
+    }
+
+    /* Nút bấm lớn */
+    .btn-action-block {
+        display: block;
+        width: 100%;
+        padding: 12px;
+        border-radius: 10px;
+        font-weight: 600;
+        text-align: center;
+        text-decoration: none;
+        transition: 0.2s;
+        margin-top: 20px;
+    }
+
+    .btn-orange {
+        background-color: #ff5b00;
+        color: white;
+        border: none;
+    }
+
+    .btn-orange:hover {
+        background-color: #e04f00;
+        color: white;
+    }
+
+    .btn-blue {
+        background-color: #0d6efd;
+        color: white;
+        border: none;
+    }
+
+    .btn-blue:hover {
+        background-color: #0b5ed7;
+        color: white;
+    }
+
+    /* Info Box trong thẻ Owner */
+    .info-box-blue {
+        background-color: #f0f7ff;
+        border: 1px solid #cce5ff;
+        border-radius: 10px;
+        padding: 15px;
+        color: #004085;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container my-5">
-    <h2 class="mb-4">Admin Dashboard</h2>
-    
-    <!-- Statistics Cards -->
-    <div class="row mb-4">
-        <div class="col-md-3 mb-3">
-            <div class="card text-center">
-                <div class="card-body">
-                    <h5 class="card-title">Tổng Users</h5>
-                    <h3 class="text-primary">{{ stats.total_users }}</h3>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3 mb-3">
-            <div class="card text-center">
-                <div class="card-body">
-                    <h5 class="card-title">Nhà hàng</h5>
-                    <h3 class="text-success">{{ stats.total_restaurants }}</h3>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3 mb-3">
-            <div class="card text-center">
-                <div class="card-body">
-                    <h5 class="card-title">Tổng đơn hàng</h5>
-                    <h3 class="text-info">{{ stats.total_orders }}</h3>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3 mb-3">
-            <div class="card text-center">
-                <div class="card-body">
-                    <h5 class="card-title">Đơn chờ xử lý</h5>
-                    <h3 class="text-warning">{{ stats.pending_orders }}</h3>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Revenue Card -->
-    <div class="row mb-4">
-        <div class="col-md-12">
-            <div class="card border-success">
-                <div class="card-body">
-                    <h5 class="card-title text-success">
-                        <i class="bi bi-cash-stack"></i> Doanh thu (5% trên mỗi đơn hàng)
-                    </h5>
-                    <h2 class="text-success mb-0">{{ "{:,.0f}".format(stats.get('revenue', 0)) }} đ</h2>
-                    <small class="text-muted">Tổng doanh thu từ phí dịch vụ (5% trên tổng tiền món của mỗi đơn hàng)</small>
-                </div>
-            </div>
-        </div>
+    <div class="mb-5">
+        <h3 class="fw-bold text-dark d-flex align-items-center">
+            <i class="bi bi-shield-check text-warning me-2"></i> Admin Dashboard
+        </h3>
+        <p class="text-muted">Tổng quan hệ thống và các tác vụ quản lý.</p>
     </div>
 
-    <!-- Quick Actions -->
-    <div class="row mb-4">
-        <div class="col-md-4 mb-3">
-            <div class="card">
-                <div class="card-body text-center">
-                    <h5 class="card-title">Chờ duyệt</h5>
-                    <p class="card-text">
-                        Nhà hàng: {{ stats.pending_restaurants }}<br>
-                        Tài xế: {{ stats.pending_shippers }}<br>
-                        Chủ nhà hàng: {{ stats.pending_restaurant_owners }}
-                    </p>
-                    <a href="{{ url_for('admin.users') }}?status=pending" class="btn btn-primary">Quản lý</a>
+    <div class="row g-4 mb-5">
+        <div class="col-md-3">
+            <div class="stats-card card-blue">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div class="stats-icon-box"><i class="bi bi-people"></i></div>
+                    <div class="stats-value">{{ stats.total_users }}</div>
                 </div>
+                <div class="stats-label">Tổng Users</div>
             </div>
         </div>
-        <div class="col-md-4 mb-3">
-            <div class="card">
-                <div class="card-body text-center">
-                    <h5 class="card-title">Chủ Nhà hàng</h5>
-                    <p class="card-text">
-                        Xem mapping chủ nhà hàng - nhà hàng
-                    </p>
-                    <a href="{{ url_for('admin.restaurant_owners') }}" class="btn btn-info">Xem chi tiết</a>
+
+        <div class="col-md-3">
+            <div class="stats-card card-green">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div class="stats-icon-box"><i class="bi bi-shop"></i></div>
+                    <div class="stats-value">{{ stats.total_restaurants }}</div>
                 </div>
+                <div class="stats-label">Nhà hàng</div>
             </div>
         </div>
+
+        <div class="col-md-3">
+            <div class="stats-card card-purple">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div class="stats-icon-box"><i class="bi bi-person-badge"></i></div>
+
+                    <div class="stats-value">{{ stats.total_restaurant_owners }}</div>
+
+                </div>
+                <div class="stats-label">Chủ nhà hàng</div>
+            </div>
+        </div>
+
+        <!-- <div class="col-md-3">
+            <div class="stats-card card-orange">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div class="stats-icon-box"><i class="bi bi-clock-history"></i></div>
+                    <div class="stats-value">{{ stats.pending_orders }}</div>
+                </div>
+                <div class="stats-label">Đơn chờ xử lý</div>
+            </div>
+        </div> -->
     </div>
 
-    <!-- Recent Orders -->
-    <h3 class="mb-3">Đơn hàng gần đây</h3>
-    <div class="table-responsive">
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Mã đơn</th>
-                    <th>Khách hàng</th>
-                    <th>Tổng tiền</th>
-                    <th>Trạng thái</th>
-                    <th>Ngày</th>
-                    <th>Thao tác</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for order in orders %}
-                <tr>
-                    <td>#{{ order._id|string|truncate(8, True, '') }}</td>
-                    <td>{{ order.get('user_id', 'N/A') }}</td>
-                    <td>{{ "{:,.0f}".format(order.get('total', 0)) }} đ</td>
-                    <td>
-                        <span class="badge bg-{{ 'success' if order.get('status') == 'delivered' else 'warning' }}">
-                            {{ order.get('status', 'N/A') }}
-                        </span>
-                    </td>
-                    <td>{{ order.get('created_at').strftime('%d/%m/%Y') if order.get('created_at') else '' }}</td>
-                    <td>
-                        <a href="{{ url_for('admin.order_detail', order_id=order._id) }}" class="btn btn-sm btn-info">Chi tiết</a>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <div class="row g-4">
+        <div class="col-lg-6">
+            <div class="section-card">
+                <div class="section-title text-orange">
+                    <i class="bi bi-clipboard-data text-warning"></i> Chờ duyệt
+                </div>
+
+                <div class="pending-list">
+                    <div class="pending-list-item">
+                        <span>Nhà hàng mới</span>
+                        <span class="pending-badge">{{ stats.pending_restaurants }}</span>
+                    </div>
+                    <div class="pending-list-item">
+                        <span>Tài xế đăng ký</span>
+                        <span class="pending-badge">{{ stats.pending_shippers }}</span>
+                    </div>
+                    <div class="pending-list-item">
+                        <span>Chủ nhà hàng</span>
+                        <span class="pending-badge">{{ stats.pending_restaurant_owners }}</span>
+                    </div>
+                </div>
+
+                <a href="{{ url_for('admin.users') }}?status=pending" class="btn-action-block btn-orange shadow-sm">
+                    Quản lý danh sách <i class="bi bi-chevron-right ms-1"></i>
+                </a>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="section-card" style="position: relative; overflow: hidden;">
+                <i class="bi bi-person-workspace"
+                    style="position: absolute; right: -20px; bottom: 30px; font-size: 10rem; color: rgba(0,0,0,0.03); transform: rotate(-15deg);"></i>
+
+                <div class="section-title text-primary">
+                    <i class="bi bi-person-gear"></i> Chủ Nhà hàng
+                </div>
+
+                <p class="text-muted mb-4" style="font-size: 0.95rem; line-height: 1.6;">
+                    Quản lý danh sách chủ nhà hàng, xem thông tin chi tiết các nhà hàng trực thuộc, kiểm soát trạng thái
+                    hoạt động và phê duyệt các yêu cầu liên quan.
+                </p>
+
+                <div class="info-box-blue mb-4">
+                    <i class="bi bi-info-circle-fill fs-5"></i>
+                    <span>Xem mapping chủ nhà hàng - nhà hàng</span>
+                </div>
+
+                <a href="{{ url_for('admin.restaurant_owners') }}" class="btn-action-block btn-blue shadow-sm">
+                    Xem chi tiết <i class="bi bi-chevron-right ms-1"></i>
+                </a>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}
-

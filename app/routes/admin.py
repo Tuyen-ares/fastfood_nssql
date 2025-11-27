@@ -27,6 +27,7 @@ def dashboard():
         'pending_restaurants': db.restaurants.count_documents({'status': 'pending'}),
         'pending_shippers': db.users.count_documents({'role': 'shipper', 'status': 'pending'}),
         'pending_restaurant_owners': db.users.count_documents({'role': 'restaurant_owner', 'status': 'pending'}),
+        'total_restaurant_owners': db.users.count_documents({'role': 'restaurant_owner'}),
         'revenue': admin_revenue
     }
     
